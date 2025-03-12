@@ -4,7 +4,6 @@ import ply.lex as lex
 Samuel Herrera Marin
 Jonathan Gaviria Ocampo'''
 
-# List of token names
 tokens = (
         #Palabras Reservadas
     'AND', 
@@ -89,7 +88,6 @@ t_DIVIDE = r'/'
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_ignore = ' \t'
-
 t_LESS = r'\<'
 t_EQUAL = r'\='  
 t_LESS_EQUAL = r'\<\='
@@ -309,15 +307,13 @@ def t_INPUT(t):
     return t
 
 def t_ID(t):
-    r'[a-zA-Z_][a-zA-Z0-9_]*'
+    r'\b[a-zA-Z_][a-zA-Z0-9_]*'
     return t
 
-# Definir un contador de líneas
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
-# Definir comentarios
 def t_comment(t):
     r'\{[^}]*\}'
     pass
@@ -326,8 +322,17 @@ def t_comment_multiline(t):
     r'\(\*[^*]*\*\)'
     pass
 
+def t_comment_singleline(t): # Para comentarios con //
+    r'//.*'
+    pass
+
+def t_ILLEGAL(t):
+    r'\d+[a-zA-Z_]+'  # Detecta secuencias ilegales como '2n'
+    print(f'Caracter Ilegal: {t.value}')
+    t.lexer.skip(len(t.value))  # Salta toda la secuencia ilegal
+
 def t_error(t):
-    print("Ilegal character '%s'" % t.value[0])
+    print(f'Caracter Ilegal: {t.value[0]}')
     t.lexer.skip(1)
 
 # Function to test the lexer
@@ -341,101 +346,36 @@ def test(data):
             break 
         print(f'Token: {tok.type}, Value: {tok.value}')
 
-data = '''program MergeSortPascal;
+data = '''program TorreDeHanoi;
 uses crt;
 
-const
-  MAX = 100;
-
-type
-  TArray = array[1..MAX] of integer;
-
-procedure Merge(var A: TArray; izquierda, medio, derecha: integer);
-var
-  i, j, k: integer;
-  n1, n2: integer;
-  L, R: TArray;
+(* Procedimiento recursivo para resolver la Torre de Hanoi *)
+procedure Hanoi(n: Integer; origen, auxiliar, destino: Char);
 begin
-  n1 := medio - izquierda + 1;
-  n2 := derecha - medio;
-
-  { Copiar datos a arreglos temporales L[] y R[] }
-  for i := 1 to n1 do
-    L[i] := A[izquierda + i - 1];
-  for j := 1 to n2 do
-    R[j] := A[medio + j];
-
-  i := 1; j := 1; k := izquierda;
-
-  { Mezclar los arreglos L[] y R[] en A[] }
-  while (i <= n1) and (j <= n2) do
+  if 2n = 1 then
+    WriteLn('Mover disco de ', origen, ' a ', destino)
+  else
   begin
-    if L[i] <= R[j] then
-    begin
-      A[k] := L[i];
-      i := i + 1;
-    end
-    else
-    begin
-      A[k] := R[j];
-      j := j + 1;
-    end;
-    k := k + 1;
-  end;
-
-  { Copiar los elementos restantes de L[], si hay alguno }
-  while i <= n1 do
-  begin
-    A[k] := L[i];
-    i := i + 1;
-    k := k + 1;
-  end;
-
-  { Copiar los elementos restantes de R[], si hay alguno }
-  while j <= n2 do
-  begin
-    A[k] := R[j];
-    j := j + 1;
-    k := k + 1;
-  end;
-end;
-
-procedure MergeSort(var A: TArray; izquierda, derecha: integer);
-var
-  medio: integer;
-begin
-  if izquierda < derecha then
-  begin
-    medio := (izquierda + derecha) div 2;
-
-    { Ordenar la primera y segunda mitad }
-    MergeSort(A, izquierda, medio);
-    MergeSort(A, medio + 1, derecha);
-
-    { Mezclar ambas mitades ordenadas }
-    Merge(A, izquierda, medio, derecha);
+    Hanoi(n - 1, origen, destino, auxiliar);  (* Mover n-1 discos a la varilla auxiliar *)
+    WriteLn('Mover disco de ', origen, ' a ', destino); (* Mover el disco más grande al destino *)
+    Hanoi(n - 1, auxiliar, origen, destino);  (* Mover los n-1 discos desde la auxiliar al destino *)
   end;
 end;
 
 var
-  A: TArray;
-  i, n: integer;
+  numDiscos: Integer;
 begin
   clrscr;
-  writeln('Ordenamiento por Mezclas (Merge Sort) en Pascal');
-  write('Ingrese la cantidad de elementos: ');
-  readln(n);
-
-  writeln('Ingrese los elementos del arreglo:');
-  for i := 1 to n do
-    readln(A[i]);
-
-  MergeSort(A, 1, n);
-
-  writeln('Arreglo ordenado:');
-  for i := 1 to n do
-    write(A[i], ' ');
-
-  readln;
-end.'''
+  
+  (* Solicitar al usuario el número de discos *)
+  Write('Ingrese el número de discos: ');
+  ReadLn(numDiscos);
+  
+  (* Llamar a la función recursiva con las varillas A, B y C *)
+  WriteLn('Movimientos necesarios para resolver la Torre de Hanoi:');
+  Hanoi(numDiscos, 'A', 'B', 'C');
+  
+  ReadLn;
+end.
+'''
 test(data)
