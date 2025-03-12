@@ -51,6 +51,8 @@ tokens = (
     'CHARACTER_LITERAL', #Para los caracteres
     'BYTE', #Para los bytes
     'CHAR', #Para los caracteres
+    'USES', #Para los usos
+    'INTEGER', #Para los enteros
 
     #Symbols
     'PLUS',    # Suma "+"
@@ -75,7 +77,6 @@ tokens = (
     'GREAT',
     'GREAT_EQUAL',
     'COLON_EQUAL', 
-
     'ID'  # Identificadores
 
 )
@@ -220,12 +221,20 @@ def t_STRING(t):
     r'\bstring\b'
     return t
 
+def t_OF(t):
+    r'\bof\b'
+    return t
+
 def t_TO(t):
     r'\bto\b'
     return t
 
 def t_THEN(t):
     r'\bthen\b'
+    return t
+
+def t_TYPE(t):
+    r'\btype\b'
     return t
 
 def t_UNIT(t):
@@ -332,27 +341,101 @@ def test(data):
             break 
         print(f'Token: {tok.type}, Value: {tok.value}')
 
-data = '''program project1;
-const
-  y = '*';
+data = '''program MergeSortPascal;
+uses crt;
 
+const
+  MAX = 100;
+
+type
+  TArray = array[1..MAX] of integer;
+
+procedure Merge(var A: TArray; izquierda, medio, derecha: integer);
 var
-  i, x : byte;
- 
-  procedure writeln_n_times(x : char; n : byte);
-  var
-    i : byte;
+  i, j, k: integer;
+  n1, n2: integer;
+  L, R: TArray;
+begin
+  n1 := medio - izquierda + 1;
+  n2 := derecha - medio;
+
+  { Copiar datos a arreglos temporales L[] y R[] }
+  for i := 1 to n1 do
+    L[i] := A[izquierda + i - 1];
+  for j := 1 to n2 do
+    R[j] := A[medio + j];
+
+  i := 1; j := 1; k := izquierda;
+
+  { Mezclar los arreglos L[] y R[] en A[] }
+  while (i <= n1) and (j <= n2) do
   begin
-    for i := 1 to n do
-      write(x);
-    writeln('hola');
+    if L[i] <= R[j] then
+    begin
+      A[k] := L[i];
+      i := i + 1;
+    end
+    else
+    begin
+      A[k] := R[j];
+      j := j + 1;
+    end;
+    k := k + 1;
   end;
 
-begin
-  write('Ievadiet veselu skaitli: ');
-  readln(x);
+  { Copiar los elementos restantes de L[], si hay alguno }
+  while i <= n1 do
+  begin
+    A[k] := L[i];
+    i := i + 1;
+    k := k + 1;
+  end;
 
-  for i := x downto 1 do
-    writeln_n_times(y, i);
+  { Copiar los elementos restantes de R[], si hay alguno }
+  while j <= n2 do
+  begin
+    A[k] := R[j];
+    j := j + 1;
+    k := k + 1;
+  end;
+end;
+
+procedure MergeSort(var A: TArray; izquierda, derecha: integer);
+var
+  medio: integer;
+begin
+  if izquierda < derecha then
+  begin
+    medio := (izquierda + derecha) div 2;
+
+    { Ordenar la primera y segunda mitad }
+    MergeSort(A, izquierda, medio);
+    MergeSort(A, medio + 1, derecha);
+
+    { Mezclar ambas mitades ordenadas }
+    Merge(A, izquierda, medio, derecha);
+  end;
+end;
+
+var
+  A: TArray;
+  i, n: integer;
+begin
+  clrscr;
+  writeln('Ordenamiento por Mezclas (Merge Sort) en Pascal');
+  write('Ingrese la cantidad de elementos: ');
+  readln(n);
+
+  writeln('Ingrese los elementos del arreglo:');
+  for i := 1 to n do
+    readln(A[i]);
+
+  MergeSort(A, 1, n);
+
+  writeln('Arreglo ordenado:');
+  for i := 1 to n do
+    write(A[i], ' ');
+
+  readln;
 end.'''
 test(data)
