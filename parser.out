@@ -1,0 +1,276 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Unused terminals:
+
+    EQUAL
+
+Grammar
+
+Rule 0     S' -> E
+Rule 1     E -> E PLUS T
+Rule 2     E -> E MINUS T
+Rule 3     E -> T
+Rule 4     T -> T TIMES F
+Rule 5     T -> T DIVIDE F
+Rule 6     T -> F
+Rule 7     F -> LPAREN E RPAREN
+Rule 8     F -> NUMBER
+Rule 9     F -> ID
+
+Terminals, with rules where they appear
+
+DIVIDE               : 5
+EQUAL                : 
+ID                   : 9
+LPAREN               : 7
+MINUS                : 2
+NUMBER               : 8
+PLUS                 : 1
+RPAREN               : 7
+TIMES                : 4
+error                : 
+
+Nonterminals, with rules where they appear
+
+E                    : 1 2 7 0
+F                    : 4 5 6
+T                    : 1 2 3 4 5
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . E
+    (1) E -> . E PLUS T
+    (2) E -> . E MINUS T
+    (3) E -> . T
+    (4) T -> . T TIMES F
+    (5) T -> . T DIVIDE F
+    (6) T -> . F
+    (7) F -> . LPAREN E RPAREN
+    (8) F -> . NUMBER
+    (9) F -> . ID
+
+    LPAREN          shift and go to state 4
+    NUMBER          shift and go to state 5
+    ID              shift and go to state 6
+
+    E                              shift and go to state 1
+    T                              shift and go to state 2
+    F                              shift and go to state 3
+
+state 1
+
+    (0) S' -> E .
+    (1) E -> E . PLUS T
+    (2) E -> E . MINUS T
+
+    PLUS            shift and go to state 7
+    MINUS           shift and go to state 8
+
+
+state 2
+
+    (3) E -> T .
+    (4) T -> T . TIMES F
+    (5) T -> T . DIVIDE F
+
+    PLUS            reduce using rule 3 (E -> T .)
+    MINUS           reduce using rule 3 (E -> T .)
+    $end            reduce using rule 3 (E -> T .)
+    RPAREN          reduce using rule 3 (E -> T .)
+    TIMES           shift and go to state 9
+    DIVIDE          shift and go to state 10
+
+
+state 3
+
+    (6) T -> F .
+
+    TIMES           reduce using rule 6 (T -> F .)
+    DIVIDE          reduce using rule 6 (T -> F .)
+    PLUS            reduce using rule 6 (T -> F .)
+    MINUS           reduce using rule 6 (T -> F .)
+    $end            reduce using rule 6 (T -> F .)
+    RPAREN          reduce using rule 6 (T -> F .)
+
+
+state 4
+
+    (7) F -> LPAREN . E RPAREN
+    (1) E -> . E PLUS T
+    (2) E -> . E MINUS T
+    (3) E -> . T
+    (4) T -> . T TIMES F
+    (5) T -> . T DIVIDE F
+    (6) T -> . F
+    (7) F -> . LPAREN E RPAREN
+    (8) F -> . NUMBER
+    (9) F -> . ID
+
+    LPAREN          shift and go to state 4
+    NUMBER          shift and go to state 5
+    ID              shift and go to state 6
+
+    E                              shift and go to state 11
+    T                              shift and go to state 2
+    F                              shift and go to state 3
+
+state 5
+
+    (8) F -> NUMBER .
+
+    TIMES           reduce using rule 8 (F -> NUMBER .)
+    DIVIDE          reduce using rule 8 (F -> NUMBER .)
+    PLUS            reduce using rule 8 (F -> NUMBER .)
+    MINUS           reduce using rule 8 (F -> NUMBER .)
+    $end            reduce using rule 8 (F -> NUMBER .)
+    RPAREN          reduce using rule 8 (F -> NUMBER .)
+
+
+state 6
+
+    (9) F -> ID .
+
+    TIMES           reduce using rule 9 (F -> ID .)
+    DIVIDE          reduce using rule 9 (F -> ID .)
+    PLUS            reduce using rule 9 (F -> ID .)
+    MINUS           reduce using rule 9 (F -> ID .)
+    $end            reduce using rule 9 (F -> ID .)
+    RPAREN          reduce using rule 9 (F -> ID .)
+
+
+state 7
+
+    (1) E -> E PLUS . T
+    (4) T -> . T TIMES F
+    (5) T -> . T DIVIDE F
+    (6) T -> . F
+    (7) F -> . LPAREN E RPAREN
+    (8) F -> . NUMBER
+    (9) F -> . ID
+
+    LPAREN          shift and go to state 4
+    NUMBER          shift and go to state 5
+    ID              shift and go to state 6
+
+    T                              shift and go to state 12
+    F                              shift and go to state 3
+
+state 8
+
+    (2) E -> E MINUS . T
+    (4) T -> . T TIMES F
+    (5) T -> . T DIVIDE F
+    (6) T -> . F
+    (7) F -> . LPAREN E RPAREN
+    (8) F -> . NUMBER
+    (9) F -> . ID
+
+    LPAREN          shift and go to state 4
+    NUMBER          shift and go to state 5
+    ID              shift and go to state 6
+
+    T                              shift and go to state 13
+    F                              shift and go to state 3
+
+state 9
+
+    (4) T -> T TIMES . F
+    (7) F -> . LPAREN E RPAREN
+    (8) F -> . NUMBER
+    (9) F -> . ID
+
+    LPAREN          shift and go to state 4
+    NUMBER          shift and go to state 5
+    ID              shift and go to state 6
+
+    F                              shift and go to state 14
+
+state 10
+
+    (5) T -> T DIVIDE . F
+    (7) F -> . LPAREN E RPAREN
+    (8) F -> . NUMBER
+    (9) F -> . ID
+
+    LPAREN          shift and go to state 4
+    NUMBER          shift and go to state 5
+    ID              shift and go to state 6
+
+    F                              shift and go to state 15
+
+state 11
+
+    (7) F -> LPAREN E . RPAREN
+    (1) E -> E . PLUS T
+    (2) E -> E . MINUS T
+
+    RPAREN          shift and go to state 16
+    PLUS            shift and go to state 7
+    MINUS           shift and go to state 8
+
+
+state 12
+
+    (1) E -> E PLUS T .
+    (4) T -> T . TIMES F
+    (5) T -> T . DIVIDE F
+
+    PLUS            reduce using rule 1 (E -> E PLUS T .)
+    MINUS           reduce using rule 1 (E -> E PLUS T .)
+    $end            reduce using rule 1 (E -> E PLUS T .)
+    RPAREN          reduce using rule 1 (E -> E PLUS T .)
+    TIMES           shift and go to state 9
+    DIVIDE          shift and go to state 10
+
+
+state 13
+
+    (2) E -> E MINUS T .
+    (4) T -> T . TIMES F
+    (5) T -> T . DIVIDE F
+
+    PLUS            reduce using rule 2 (E -> E MINUS T .)
+    MINUS           reduce using rule 2 (E -> E MINUS T .)
+    $end            reduce using rule 2 (E -> E MINUS T .)
+    RPAREN          reduce using rule 2 (E -> E MINUS T .)
+    TIMES           shift and go to state 9
+    DIVIDE          shift and go to state 10
+
+
+state 14
+
+    (4) T -> T TIMES F .
+
+    TIMES           reduce using rule 4 (T -> T TIMES F .)
+    DIVIDE          reduce using rule 4 (T -> T TIMES F .)
+    PLUS            reduce using rule 4 (T -> T TIMES F .)
+    MINUS           reduce using rule 4 (T -> T TIMES F .)
+    $end            reduce using rule 4 (T -> T TIMES F .)
+    RPAREN          reduce using rule 4 (T -> T TIMES F .)
+
+
+state 15
+
+    (5) T -> T DIVIDE F .
+
+    TIMES           reduce using rule 5 (T -> T DIVIDE F .)
+    DIVIDE          reduce using rule 5 (T -> T DIVIDE F .)
+    PLUS            reduce using rule 5 (T -> T DIVIDE F .)
+    MINUS           reduce using rule 5 (T -> T DIVIDE F .)
+    $end            reduce using rule 5 (T -> T DIVIDE F .)
+    RPAREN          reduce using rule 5 (T -> T DIVIDE F .)
+
+
+state 16
+
+    (7) F -> LPAREN E RPAREN .
+
+    TIMES           reduce using rule 7 (F -> LPAREN E RPAREN .)
+    DIVIDE          reduce using rule 7 (F -> LPAREN E RPAREN .)
+    PLUS            reduce using rule 7 (F -> LPAREN E RPAREN .)
+    MINUS           reduce using rule 7 (F -> LPAREN E RPAREN .)
+    $end            reduce using rule 7 (F -> LPAREN E RPAREN .)
+    RPAREN          reduce using rule 7 (F -> LPAREN E RPAREN .)
+
