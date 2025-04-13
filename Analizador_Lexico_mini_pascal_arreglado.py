@@ -104,7 +104,6 @@ t_LBLOCK = r'\{'
 t_RBLOCK = r'\}'
 t_COLON = r'\:'
 
-
 # Definir las palabras reservadas
 
 def t_AND(t):
@@ -337,45 +336,25 @@ def t_error(t):
 
 # Function to test the lexer
 def test(data):
-    lexer = lex.lex()  # Initialize the lexer
+    lexer = lex.lex()
     lexer.input(data)
-    
+
     while True:
         tok = lexer.token()
         if not tok:
-            break 
-        print(f'Token: {tok.type}, Value: {tok.value}')
+            break
+        print(f'Token: {tok.type}, Valor: {tok.value}')
 
-data = '''program TorreDeHanoi;
-uses crt;
+def test_from_file(filename):
+    try:
+        with open(filename, 'r') as file:
+            data = file.read()
+            print(f"\nContenido del archivo '{filename}':\n{data}")
+            print("\nTokens encontrados:")
+            test(data)
+    except FileNotFoundError:
+        print(f"Archivo '{filename}' no encontrado.")
 
-(* Procedimiento recursivo para resolver la Torre de Hanoi *)
-procedure Hanoi(n: Integer; origen, auxiliar, destino: Char);
-begin
-  if 2n = 1 then
-    WriteLn('Mover disco de ', origen, ' a ', destino)
-  else
-  begin
-    Hanoi(n - 1, origen, destino, auxiliar);  (* Mover n-1 discos a la varilla auxiliar *)
-    WriteLn('Mover disco de ', origen, ' a ', destino); (* Mover el disco más grande al destino *)
-    Hanoi(n - 1, auxiliar, origen, destino);  (* Mover los n-1 discos desde la auxiliar al destino *)
-  end;
-end;
-
-var
-  numDiscos: Integer;
-begin
-  clrscr;
-  
-  (* Solicitar al usuario el número de discos *)
-  Write('Ingrese el número de discos: ');
-  ReadLn(numDiscos);
-  
-  (* Llamar a la función recursiva con las varillas A, B y C *)
-  WriteLn('Movimientos necesarios para resolver la Torre de Hanoi:');
-  Hanoi(numDiscos, 'A', 'B', 'C');
-  
-  ReadLn;
-end.
-'''
-test(data)
+# Ejemplo de uso
+if __name__ == "__main__":
+    test_from_file("Evaluar_Pascal.txt")

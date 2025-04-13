@@ -1,0 +1,31 @@
+program TorreDeHanoi;
+uses crt;
+
+(* Procedimiento recursivo para resolver la Torre de Hanoi *)
+procedure Hanoi(n: Integer; origen, auxiliar, destino: Char);
+begin
+  if 2n = 1 then
+    WriteLn('Mover disco de ', origen, ' a ', destino)
+  else
+  begin
+    Hanoi(n - 1, origen, destino, auxiliar);  (* Mover n-1 discos a la varilla auxiliar *)
+    WriteLn('Mover disco de ', origen, ' a ', destino); (* Mover el disco más grande al destino *)
+    Hanoi(n - 1, auxiliar, origen, destino);  (* Mover los n-1 discos desde la auxiliar al destino *)
+  end;
+end;
+
+var
+  numDiscos: Integer;
+begin
+  clrscr;
+  
+  (* Solicitar al usuario el número de discos *)
+  Write('Ingrese el número de discos: ');
+  ReadLn(numDiscos);
+  
+  (* Llamar a la función recursiva con las varillas A, B y C *)
+  WriteLn('Movimientos necesarios para resolver la Torre de Hanoi:');
+  Hanoi(numDiscos, 'A', 'B', 'C');
+  
+  ReadLn;
+end.
