@@ -2,275 +2,184 @@ Created by PLY version 3.11 (http://www.dabeaz.com/ply)
 
 Unused terminals:
 
+    AND
+    ARRAY
+    BOOLEAN_LITERAL
+    BYTE
+    CASE
+    CHAR
+    CHARACTER_LITERAL
+    COLON_EQUAL
+    CONST
+    DIFFERENT
+    DIV
+    DOWNTO
     EQUAL
+    FALSE
+    FILE
+    FOR
+    FUNCTION
+    GOTO
+    GREAT
+    GREAT_EQUAL
+    IN
+    LABEL
+    LBLOCK
+    LBRACKET
+    LESS
+    LESS_EQUAL
+    MOD
+    NIL
+    NOT
+    OF
+    OR
+    PACKED
+    PROCEDURE
+    RBLOCK
+    RBRACKET
+    RECORD
+    REPEAT
+    SET
+    STRING_LITERAL
+    TO
+    TRUE
+    TYPE
+    UNTIL
+    USES
+    WITH
+    WRITE
+    WRITELN
 
 Grammar
 
-Rule 0     S' -> E
-Rule 1     E -> E PLUS T
-Rule 2     E -> E MINUS T
-Rule 3     E -> T
-Rule 4     T -> T TIMES F
-Rule 5     T -> T DIVIDE F
-Rule 6     T -> F
-Rule 7     F -> LPAREN E RPAREN
-Rule 8     F -> NUMBER
-Rule 9     F -> ID
+Rule 0     S' -> program
+Rule 1     program -> PROGRAM ID SEMICOLON block DOT
+Rule 2     block -> declarations BEGIN statement_list END
+Rule 3     declarations -> VAR declaration_list
+Rule 4     declarations -> empty
+Rule 5     declaration_list -> declaration_list declaration
+Rule 6     declaration_list -> declaration
+Rule 7     declaration -> id_list COLON type SEMICOLON
+Rule 8     id_list -> ID
+Rule 9     id_list -> ID COMMA id_list
+Rule 10    type -> INTEGER
+Rule 11    type -> REAL
+Rule 12    statement_list -> statement SEMICOLON statement_list
+Rule 13    statement_list -> statement
+Rule 14    statement -> assignment
+Rule 15    statement -> if_statement
+Rule 16    statement -> while_statement
+Rule 17    statement -> compound_statement
+Rule 18    assignment -> ID ASSIGN expression
+Rule 19    if_statement -> IF expression THEN statement else_optional
+Rule 20    else_optional -> ELSE statement
+Rule 21    else_optional -> empty
+Rule 22    while_statement -> WHILE expression DO statement
+Rule 23    compound_statement -> BEGIN statement_list END
+Rule 24    expression -> expression PLUS term
+Rule 25    expression -> expression MINUS term
+Rule 26    expression -> term
+Rule 27    term -> term TIMES factor
+Rule 28    term -> term DIVIDE factor
+Rule 29    term -> factor
+Rule 30    factor -> LPAREN expression RPAREN
+Rule 31    factor -> NUMBER
+Rule 32    factor -> ID
+Rule 33    empty -> <empty>
 
 Terminals, with rules where they appear
 
-DIVIDE               : 5
+AND                  : 
+ARRAY                : 
+BEGIN                : 2 23
+BOOLEAN_LITERAL      : 
+BYTE                 : 
+CASE                 : 
+CHAR                 : 
+CHARACTER_LITERAL    : 
+COLON                : 7
+COLON_EQUAL          : 
+COMMA                : 9
+CONST                : 
+DIFFERENT            : 
+DIV                  : 
+DIVIDE               : 28
+DO                   : 22
+DOT                  : 1
+DOWNTO               : 
+ELSE                 : 20
+END                  : 2 23
 EQUAL                : 
-ID                   : 9
-LPAREN               : 7
-MINUS                : 2
-NUMBER               : 8
-PLUS                 : 1
-RPAREN               : 7
-TIMES                : 4
+FALSE                : 
+FILE                 : 
+FOR                  : 
+FUNCTION             : 
+GOTO                 : 
+GREAT                : 
+GREAT_EQUAL          : 
+ID                   : 1 8 9 18 32
+IF                   : 19
+IN                   : 
+INTEGER              : 10
+LABEL                : 
+LBLOCK               : 
+LBRACKET             : 
+LESS                 : 
+LESS_EQUAL           : 
+LPAREN               : 30
+MINUS                : 25
+MOD                  : 
+NIL                  : 
+NOT                  : 
+NUMBER               : 31
+OF                   : 
+OR                   : 
+PACKED               : 
+PLUS                 : 24
+PROCEDURE            : 
+PROGRAM              : 1
+RBLOCK               : 
+RBRACKET             : 
+RECORD               : 
+REPEAT               : 
+RPAREN               : 30
+SEMICOLON            : 1 7 12
+SET                  : 
+STRING_LITERAL       : 
+THEN                 : 19
+TIMES                : 27
+TO                   : 
+TRUE                 : 
+TYPE                 : 
+UNTIL                : 
+USES                 : 
+VAR                  : 3
+WHILE                : 22
+WITH                 : 
+WRITE                : 
+WRITELN              : 
 error                : 
 
 Nonterminals, with rules where they appear
 
-E                    : 1 2 7 0
-F                    : 4 5 6
-T                    : 1 2 3 4 5
-
-Parsing method: LALR
-
-state 0
-
-    (0) S' -> . E
-    (1) E -> . E PLUS T
-    (2) E -> . E MINUS T
-    (3) E -> . T
-    (4) T -> . T TIMES F
-    (5) T -> . T DIVIDE F
-    (6) T -> . F
-    (7) F -> . LPAREN E RPAREN
-    (8) F -> . NUMBER
-    (9) F -> . ID
-
-    LPAREN          shift and go to state 4
-    NUMBER          shift and go to state 5
-    ID              shift and go to state 6
-
-    E                              shift and go to state 1
-    T                              shift and go to state 2
-    F                              shift and go to state 3
-
-state 1
-
-    (0) S' -> E .
-    (1) E -> E . PLUS T
-    (2) E -> E . MINUS T
-
-    PLUS            shift and go to state 7
-    MINUS           shift and go to state 8
-
-
-state 2
-
-    (3) E -> T .
-    (4) T -> T . TIMES F
-    (5) T -> T . DIVIDE F
-
-    PLUS            reduce using rule 3 (E -> T .)
-    MINUS           reduce using rule 3 (E -> T .)
-    $end            reduce using rule 3 (E -> T .)
-    RPAREN          reduce using rule 3 (E -> T .)
-    TIMES           shift and go to state 9
-    DIVIDE          shift and go to state 10
-
-
-state 3
-
-    (6) T -> F .
-
-    TIMES           reduce using rule 6 (T -> F .)
-    DIVIDE          reduce using rule 6 (T -> F .)
-    PLUS            reduce using rule 6 (T -> F .)
-    MINUS           reduce using rule 6 (T -> F .)
-    $end            reduce using rule 6 (T -> F .)
-    RPAREN          reduce using rule 6 (T -> F .)
-
-
-state 4
-
-    (7) F -> LPAREN . E RPAREN
-    (1) E -> . E PLUS T
-    (2) E -> . E MINUS T
-    (3) E -> . T
-    (4) T -> . T TIMES F
-    (5) T -> . T DIVIDE F
-    (6) T -> . F
-    (7) F -> . LPAREN E RPAREN
-    (8) F -> . NUMBER
-    (9) F -> . ID
-
-    LPAREN          shift and go to state 4
-    NUMBER          shift and go to state 5
-    ID              shift and go to state 6
-
-    E                              shift and go to state 11
-    T                              shift and go to state 2
-    F                              shift and go to state 3
-
-state 5
-
-    (8) F -> NUMBER .
-
-    TIMES           reduce using rule 8 (F -> NUMBER .)
-    DIVIDE          reduce using rule 8 (F -> NUMBER .)
-    PLUS            reduce using rule 8 (F -> NUMBER .)
-    MINUS           reduce using rule 8 (F -> NUMBER .)
-    $end            reduce using rule 8 (F -> NUMBER .)
-    RPAREN          reduce using rule 8 (F -> NUMBER .)
-
-
-state 6
-
-    (9) F -> ID .
-
-    TIMES           reduce using rule 9 (F -> ID .)
-    DIVIDE          reduce using rule 9 (F -> ID .)
-    PLUS            reduce using rule 9 (F -> ID .)
-    MINUS           reduce using rule 9 (F -> ID .)
-    $end            reduce using rule 9 (F -> ID .)
-    RPAREN          reduce using rule 9 (F -> ID .)
-
-
-state 7
-
-    (1) E -> E PLUS . T
-    (4) T -> . T TIMES F
-    (5) T -> . T DIVIDE F
-    (6) T -> . F
-    (7) F -> . LPAREN E RPAREN
-    (8) F -> . NUMBER
-    (9) F -> . ID
-
-    LPAREN          shift and go to state 4
-    NUMBER          shift and go to state 5
-    ID              shift and go to state 6
-
-    T                              shift and go to state 12
-    F                              shift and go to state 3
-
-state 8
-
-    (2) E -> E MINUS . T
-    (4) T -> . T TIMES F
-    (5) T -> . T DIVIDE F
-    (6) T -> . F
-    (7) F -> . LPAREN E RPAREN
-    (8) F -> . NUMBER
-    (9) F -> . ID
-
-    LPAREN          shift and go to state 4
-    NUMBER          shift and go to state 5
-    ID              shift and go to state 6
-
-    T                              shift and go to state 13
-    F                              shift and go to state 3
-
-state 9
-
-    (4) T -> T TIMES . F
-    (7) F -> . LPAREN E RPAREN
-    (8) F -> . NUMBER
-    (9) F -> . ID
-
-    LPAREN          shift and go to state 4
-    NUMBER          shift and go to state 5
-    ID              shift and go to state 6
-
-    F                              shift and go to state 14
-
-state 10
-
-    (5) T -> T DIVIDE . F
-    (7) F -> . LPAREN E RPAREN
-    (8) F -> . NUMBER
-    (9) F -> . ID
-
-    LPAREN          shift and go to state 4
-    NUMBER          shift and go to state 5
-    ID              shift and go to state 6
-
-    F                              shift and go to state 15
-
-state 11
-
-    (7) F -> LPAREN E . RPAREN
-    (1) E -> E . PLUS T
-    (2) E -> E . MINUS T
-
-    RPAREN          shift and go to state 16
-    PLUS            shift and go to state 7
-    MINUS           shift and go to state 8
-
-
-state 12
-
-    (1) E -> E PLUS T .
-    (4) T -> T . TIMES F
-    (5) T -> T . DIVIDE F
-
-    PLUS            reduce using rule 1 (E -> E PLUS T .)
-    MINUS           reduce using rule 1 (E -> E PLUS T .)
-    $end            reduce using rule 1 (E -> E PLUS T .)
-    RPAREN          reduce using rule 1 (E -> E PLUS T .)
-    TIMES           shift and go to state 9
-    DIVIDE          shift and go to state 10
-
-
-state 13
-
-    (2) E -> E MINUS T .
-    (4) T -> T . TIMES F
-    (5) T -> T . DIVIDE F
-
-    PLUS            reduce using rule 2 (E -> E MINUS T .)
-    MINUS           reduce using rule 2 (E -> E MINUS T .)
-    $end            reduce using rule 2 (E -> E MINUS T .)
-    RPAREN          reduce using rule 2 (E -> E MINUS T .)
-    TIMES           shift and go to state 9
-    DIVIDE          shift and go to state 10
-
-
-state 14
-
-    (4) T -> T TIMES F .
-
-    TIMES           reduce using rule 4 (T -> T TIMES F .)
-    DIVIDE          reduce using rule 4 (T -> T TIMES F .)
-    PLUS            reduce using rule 4 (T -> T TIMES F .)
-    MINUS           reduce using rule 4 (T -> T TIMES F .)
-    $end            reduce using rule 4 (T -> T TIMES F .)
-    RPAREN          reduce using rule 4 (T -> T TIMES F .)
-
-
-state 15
-
-    (5) T -> T DIVIDE F .
-
-    TIMES           reduce using rule 5 (T -> T DIVIDE F .)
-    DIVIDE          reduce using rule 5 (T -> T DIVIDE F .)
-    PLUS            reduce using rule 5 (T -> T DIVIDE F .)
-    MINUS           reduce using rule 5 (T -> T DIVIDE F .)
-    $end            reduce using rule 5 (T -> T DIVIDE F .)
-    RPAREN          reduce using rule 5 (T -> T DIVIDE F .)
-
-
-state 16
-
-    (7) F -> LPAREN E RPAREN .
-
-    TIMES           reduce using rule 7 (F -> LPAREN E RPAREN .)
-    DIVIDE          reduce using rule 7 (F -> LPAREN E RPAREN .)
-    PLUS            reduce using rule 7 (F -> LPAREN E RPAREN .)
-    MINUS           reduce using rule 7 (F -> LPAREN E RPAREN .)
-    $end            reduce using rule 7 (F -> LPAREN E RPAREN .)
-    RPAREN          reduce using rule 7 (F -> LPAREN E RPAREN .)
+ASSIGN               : 18
+REAL                 : 11
+assignment           : 14
+block                : 1
+compound_statement   : 17
+declaration          : 5 6
+declaration_list     : 3 5
+declarations         : 2
+else_optional        : 19
+empty                : 4 21
+expression           : 18 19 22 24 25 30
+factor               : 27 28 29
+id_list              : 7 9
+if_statement         : 15
+program              : 0
+statement            : 12 13 19 20 22
+statement_list       : 2 12 23
+term                 : 24 25 26 27 28
+type                 : 7
+while_statement      : 16
 
