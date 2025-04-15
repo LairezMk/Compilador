@@ -76,8 +76,11 @@ tokens = (
     'GREAT',
     'GREAT_EQUAL',
     'COLON_EQUAL', 
-    'ID'  # Identificadores
-
+    'ID' , # Identificadores
+    'STRING', # Para cadenas de texto
+    'READLINE', # Para leer líneas
+    'DOTDOT', # Para ".."
+    
 )
 
 # Regular expression rules for simple tokens
@@ -103,6 +106,8 @@ t_RBRACKET = r'\]'
 t_LBLOCK = r'\{'
 t_RBLOCK = r'\}'
 t_COLON = r'\:'
+t_DOTDOT = r'\.\.'
+
 
 # Definir las palabras reservadas
 
@@ -274,8 +279,16 @@ def t_READ(t):
     r'\bread\b'
     return t
 
+def t_PROCEDURE(t):
+    r'\bprocedure\b'
+    return t
+
 def t_XOR(t):
     r'\bxor\b'
+    return t
+
+def t_READLINE(t):
+    r'\breadline\b'
     return t
 
 def t_NUMBER(t):

@@ -2,9 +2,9 @@ program TorreDeHanoi;
 uses crt;
 
 (* Procedimiento recursivo para resolver la Torre de Hanoi *)
-procedure Hanoi(n: Integer; origen, auxiliar, destino: Char);
+procedure Hanoi(n: integer, origen, auxiliar, destino: Char);
 begin
-  if 2n = 1 then
+  if n = 1 then
     WriteLn('Mover disco de ', origen, ' a ', destino)
   else
   begin

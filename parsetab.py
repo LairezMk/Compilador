@@ -6,9 +6,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'DIVIDE EQUAL ID LPAREN MINUS NUMBER PLUS RPAREN TIMESE : E PLUS T\n         | E MINUS TE : TT : T TIMES F\n         | T DIVIDE FT : FF : LPAREN E RPARENF : NUMBERF : ID'
+_lr_signature = 'AND ARRAY BEGIN BOOLEAN_LITERAL BYTE CASE CHAR CHARACTER_LITERAL COLON COLON_EQUAL COMMA CONST DIFFERENT DIV DIVIDE DO DOT DOTDOT DOWNTO ELSE END EQUAL FALSE FILE FOR FUNCTION GOTO GREAT GREAT_EQUAL ID IF IN INTEGER LABEL LBLOCK LBRACKET LESS LESS_EQUAL LPAREN MINUS MOD NIL NOT NUMBER OF OR PACKED PLUS PROCEDURE PROGRAM RBLOCK RBRACKET READLINE RECORD REPEAT RPAREN SEMICOLON SET STRING STRING_LITERAL THEN TIMES TO TRUE TYPE UNTIL USES VAR WHILE WITH WRITE WRITELNprogram : PROGRAM ID SEMICOLON uses_opt block DOTuses_opt : USES ID SEMICOLON\n                | emptyblock : declarations compound_statementdeclarations : VAR declaration_list procedure_declarationsdeclarations : VAR declaration_listdeclarations : procedure_declarationsdeclarations : emptydeclaration_list : declaration\n                        | declaration_list declarationdeclaration : id_list COLON type_specifier SEMICOLONid_list : IDid_list : id_list COMMA IDtype_specifier : INTEGERtype_specifier : ARRAY LBRACKET NUMBER DOTDOT NUMBER RBRACKET OF INTEGERprocedure_declarations : procedure_declaration\n                              | procedure_declarations procedure_declarationprocedure_declaration : PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON block SEMICOLONparameter_list : id_list COLON type_specifiercompound_statement : BEGIN statement_list ENDstatement_list : statement statement_list_tailstatement_list_tail : SEMICOLON statement statement_list_tail\n                           | emptystatement : assignment_statementstatement : if_statementstatement : while_statementstatement : procedure_callstatement : compound_statementstatement : emptyassignment_statement : variable COLON_EQUAL expressionvariable : IDvariable : ID LBRACKET expression RBRACKETif_statement : IF expression THEN statement ELSE statementwhile_statement : WHILE expression DO statementprocedure_call : ID LPAREN expression_list RPARENexpression_list : expression expression_list_tailexpression_list_tail : COMMA expression\n                            | emptyexpression_list : emptyexpression : simple_expression relop simple_expression\n                  | simple_expressionsimple_expression : term simple_expression_tailsimple_expression_tail : addop term\n                              | emptyaddop : PLUS\n             | MINUSterm : factor term_tailterm_tail : mulop factor\n                 | emptymulop : TIMES\n             | DIVIDEfactor : LPAREN expression RPARENfactor : variablefactor : NUMBERfactor : STRINGrelop : LESS\n             | LESS_EQUAL\n             | GREAT\n             | GREAT_EQUAL\n             | EQUAL\n             | DIFFERENTempty :statement : READLINEstatement : WRITELN LPAREN expression_list RPARENstatement : USES ID SEMICOLON'
     
-_lr_action_items = {'LPAREN':([0,4,7,8,9,10,],[4,4,4,4,4,4,]),'NUMBER':([0,4,7,8,9,10,],[5,5,5,5,5,5,]),'ID':([0,4,7,8,9,10,],[6,6,6,6,6,6,]),'$end':([1,2,3,5,6,12,13,14,15,16,],[0,-3,-6,-8,-9,-1,-2,-4,-5,-7,]),'PLUS':([1,2,3,5,6,11,12,13,14,15,16,],[7,-3,-6,-8,-9,7,-1,-2,-4,-5,-7,]),'MINUS':([1,2,3,5,6,11,12,13,14,15,16,],[8,-3,-6,-8,-9,8,-1,-2,-4,-5,-7,]),'RPAREN':([2,3,5,6,11,12,13,14,15,16,],[-3,-6,-8,-9,16,-1,-2,-4,-5,-7,]),'TIMES':([2,3,5,6,12,13,14,15,16,],[9,-6,-8,-9,9,9,-4,-5,-7,]),'DIVIDE':([2,3,5,6,12,13,14,15,16,],[10,-6,-8,-9,10,10,-4,-5,-7,]),}
+_lr_action_items = {'PROGRAM':([0,],[2,]),'$end':([1,16,],[0,-1,]),'ID':([2,6,10,14,18,19,20,36,39,40,42,44,45,48,50,52,53,54,59,79,80,81,82,83,84,85,86,88,90,91,93,95,96,98,99,106,120,],[3,15,22,24,37,22,-9,51,63,63,-10,68,22,37,63,63,63,63,63,37,63,-56,-57,-58,-59,-60,-61,63,-45,-46,63,-50,-51,37,-11,63,37,]),'SEMICOLON':([3,15,17,18,27,28,29,30,31,32,33,34,46,48,51,56,57,58,60,61,62,63,65,66,71,75,78,87,89,92,94,98,101,104,108,109,111,112,113,114,115,120,122,123,128,],[4,25,-4,-62,48,-24,-25,-26,-27,-28,-29,-63,-20,-62,75,-41,-62,-62,-53,-54,-55,-31,99,-14,48,-65,-30,-42,-44,-47,-49,-62,117,-64,-35,-32,-40,-43,-48,-52,-34,-62,125,-33,-15,]),'USES':([4,18,48,79,98,120,],[6,36,36,36,36,36,]),'VAR':([4,5,7,25,117,],[-62,10,-3,-2,10,]),'PROCEDURE':([4,5,7,11,13,19,20,23,25,41,42,99,117,125,],[-62,14,-3,14,-16,14,-9,-17,-2,14,-10,-11,14,-18,]),'BEGIN':([4,5,7,9,11,12,13,18,19,20,23,25,41,42,48,79,98,99,117,120,125,],[-62,-62,-3,18,-7,-8,-16,18,-6,-9,-17,-2,-5,-10,18,18,18,-11,-62,18,-18,]),'DOT':([8,17,46,],[16,-4,-20,]),'READLINE':([18,48,79,98,120,],[34,34,34,34,34,]),'WRITELN':([18,48,79,98,120,],[35,35,35,35,35,]),'IF':([18,48,79,98,120,],[39,39,39,39,39,]),'WHILE':([18,48,79,98,120,],[40,40,40,40,40,]),'END':([18,26,27,28,29,30,31,32,33,34,46,47,48,49,56,57,58,60,61,62,63,71,75,78,87,89,92,94,98,103,104,108,109,111,112,113,114,115,120,123,],[-62,46,-62,-24,-25,-26,-27,-28,-29,-63,-20,-21,-62,-23,-41,-62,-62,-53,-54,-55,-31,-62,-65,-30,-42,-44,-47,-49,-62,-22,-64,-35,-32,-40,-43,-48,-52,-34,-62,-33,]),'COLON':([21,22,68,70,],[43,-12,-13,102,]),'COMMA':([21,22,56,57,58,60,61,62,63,68,70,73,87,89,92,94,109,111,112,113,114,],[44,-12,-41,-62,-62,-53,-54,-55,-31,-13,44,106,-42,-44,-47,-49,-32,-40,-43,-48,-52,]),'LPAREN':([24,35,37,39,40,50,52,53,54,59,80,81,82,83,84,85,86,88,90,91,93,95,96,106,],[45,50,52,59,59,59,59,59,59,59,59,-56,-57,-58,-59,-60,-61,59,-45,-46,59,-50,-51,59,]),'ELSE':([28,29,30,31,32,33,34,46,56,57,58,60,61,62,63,75,78,79,87,89,92,94,98,104,108,109,110,111,112,113,114,115,120,123,],[-24,-25,-26,-27,-28,-29,-63,-20,-41,-62,-62,-53,-54,-55,-31,-65,-30,-62,-42,-44,-47,-49,-62,-64,-35,-32,120,-40,-43,-48,-52,-34,-62,-33,]),'COLON_EQUAL':([37,38,109,],[-31,54,-32,]),'LBRACKET':([37,63,67,],[53,53,100,]),'NUMBER':([39,40,50,52,53,54,59,80,81,82,83,84,85,86,88,90,91,93,95,96,100,106,121,],[61,61,61,61,61,61,61,61,-56,-57,-58,-59,-60,-61,61,-45,-46,61,-50,-51,116,61,124,]),'STRING':([39,40,50,52,53,54,59,80,81,82,83,84,85,86,88,90,91,93,95,96,106,],[62,62,62,62,62,62,62,62,-56,-57,-58,-59,-60,-61,62,-45,-46,62,-50,-51,62,]),'INTEGER':([43,102,127,],[66,66,128,]),'ARRAY':([43,102,],[67,67,]),'RPAREN':([50,52,56,57,58,60,61,62,63,66,69,72,73,74,76,87,89,92,94,97,105,107,109,111,112,113,114,118,119,128,],[-62,-62,-41,-62,-62,-53,-54,-55,-31,-14,101,104,-62,-39,108,-42,-44,-47,-49,114,-36,-38,-32,-40,-43,-48,-52,-19,-37,-15,]),'THEN':([55,56,57,58,60,61,62,63,87,89,92,94,109,111,112,113,114,],[79,-41,-62,-62,-53,-54,-55,-31,-42,-44,-47,-49,-32,-40,-43,-48,-52,]),'DO':([56,57,58,60,61,62,63,64,87,89,92,94,109,111,112,113,114,],[-41,-62,-62,-53,-54,-55,-31,98,-42,-44,-47,-49,-32,-40,-43,-48,-52,]),'RBRACKET':([56,57,58,60,61,62,63,77,87,89,92,94,109,111,112,113,114,124,],[-41,-62,-62,-53,-54,-55,-31,109,-42,-44,-47,-49,-32,-40,-43,-48,-52,126,]),'LESS':([56,57,58,60,61,62,63,87,89,92,94,109,112,113,114,],[81,-62,-62,-53,-54,-55,-31,-42,-44,-47,-49,-32,-43,-48,-52,]),'LESS_EQUAL':([56,57,58,60,61,62,63,87,89,92,94,109,112,113,114,],[82,-62,-62,-53,-54,-55,-31,-42,-44,-47,-49,-32,-43,-48,-52,]),'GREAT':([56,57,58,60,61,62,63,87,89,92,94,109,112,113,114,],[83,-62,-62,-53,-54,-55,-31,-42,-44,-47,-49,-32,-43,-48,-52,]),'GREAT_EQUAL':([56,57,58,60,61,62,63,87,89,92,94,109,112,113,114,],[84,-62,-62,-53,-54,-55,-31,-42,-44,-47,-49,-32,-43,-48,-52,]),'EQUAL':([56,57,58,60,61,62,63,87,89,92,94,109,112,113,114,],[85,-62,-62,-53,-54,-55,-31,-42,-44,-47,-49,-32,-43,-48,-52,]),'DIFFERENT':([56,57,58,60,61,62,63,87,89,92,94,109,112,113,114,],[86,-62,-62,-53,-54,-55,-31,-42,-44,-47,-49,-32,-43,-48,-52,]),'PLUS':([57,58,60,61,62,63,92,94,109,113,114,],[90,-62,-53,-54,-55,-31,-47,-49,-32,-48,-52,]),'MINUS':([57,58,60,61,62,63,92,94,109,113,114,],[91,-62,-53,-54,-55,-31,-47,-49,-32,-48,-52,]),'TIMES':([58,60,61,62,63,109,114,],[95,-53,-54,-55,-31,-32,-52,]),'DIVIDE':([58,60,61,62,63,109,114,],[96,-53,-54,-55,-31,-32,-52,]),'DOTDOT':([116,],[121,]),'OF':([126,],[127,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -17,7 +17,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'E':([0,4,],[1,11,]),'T':([0,4,7,8,],[2,2,12,13,]),'F':([0,4,7,8,9,10,],[3,3,3,3,14,15,]),}
+_lr_goto_items = {'program':([0,],[1,]),'uses_opt':([4,],[5,]),'empty':([4,5,18,27,48,50,52,57,58,71,73,79,98,117,120,],[7,12,33,49,33,74,74,89,94,49,107,33,33,12,33,]),'block':([5,117,],[8,122,]),'declarations':([5,117,],[9,9,]),'procedure_declarations':([5,19,117,],[11,41,11,]),'procedure_declaration':([5,11,19,41,117,],[13,23,13,23,13,]),'compound_statement':([9,18,48,79,98,120,],[17,32,32,32,32,32,]),'declaration_list':([10,],[19,]),'declaration':([10,19,],[20,42,]),'id_list':([10,19,45,],[21,21,70,]),'statement_list':([18,],[26,]),'statement':([18,48,79,98,120,],[27,71,110,115,123,]),'assignment_statement':([18,48,79,98,120,],[28,28,28,28,28,]),'if_statement':([18,48,79,98,120,],[29,29,29,29,29,]),'while_statement':([18,48,79,98,120,],[30,30,30,30,30,]),'procedure_call':([18,48,79,98,120,],[31,31,31,31,31,]),'variable':([18,39,40,48,50,52,53,54,59,79,80,88,93,98,106,120,],[38,60,60,38,60,60,60,60,60,38,60,60,60,38,60,38,]),'statement_list_tail':([27,71,],[47,103,]),'expression':([39,40,50,52,53,54,59,106,],[55,64,73,73,77,78,97,119,]),'simple_expression':([39,40,50,52,53,54,59,80,106,],[56,56,56,56,56,56,56,111,56,]),'term':([39,40,50,52,53,54,59,80,88,106,],[57,57,57,57,57,57,57,57,112,57,]),'factor':([39,40,50,52,53,54,59,80,88,93,106,],[58,58,58,58,58,58,58,58,58,113,58,]),'type_specifier':([43,102,],[65,118,]),'parameter_list':([45,],[69,]),'expression_list':([50,52,],[72,76,]),'relop':([56,],[80,]),'simple_expression_tail':([57,],[87,]),'addop':([57,],[88,]),'term_tail':([58,],[92,]),'mulop':([58,],[93,]),'expression_list_tail':([73,],[105,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -26,14 +26,70 @@ for _k, _v in _lr_goto_items.items():
        _lr_goto[_x][_k] = _y
 del _lr_goto_items
 _lr_productions = [
-  ("S' -> E","S'",1,None,None,None),
-  ('E -> E PLUS T','E',3,'p_expression_plus_minus','Parser_Calculadora.py',8),
-  ('E -> E MINUS T','E',3,'p_expression_plus_minus','Parser_Calculadora.py',9),
-  ('E -> T','E',1,'p_expression_term','Parser_Calculadora.py',13),
-  ('T -> T TIMES F','T',3,'p_term_times_divide','Parser_Calculadora.py',17),
-  ('T -> T DIVIDE F','T',3,'p_term_times_divide','Parser_Calculadora.py',18),
-  ('T -> F','T',1,'p_term_factor','Parser_Calculadora.py',22),
-  ('F -> LPAREN E RPAREN','F',3,'p_factor_group','Parser_Calculadora.py',26),
-  ('F -> NUMBER','F',1,'p_factor_number','Parser_Calculadora.py',30),
-  ('F -> ID','F',1,'p_factor_id','Parser_Calculadora.py',34),
+  ("S' -> program","S'",1,None,None,None),
+  ('program -> PROGRAM ID SEMICOLON uses_opt block DOT','program',6,'p_program','Parser_MiniPascal.py',12),
+  ('uses_opt -> USES ID SEMICOLON','uses_opt',3,'p_uses_opt','Parser_MiniPascal.py',16),
+  ('uses_opt -> empty','uses_opt',1,'p_uses_opt','Parser_MiniPascal.py',17),
+  ('block -> declarations compound_statement','block',2,'p_block','Parser_MiniPascal.py',25),
+  ('declarations -> VAR declaration_list procedure_declarations','declarations',3,'p_declarations_var_proc','Parser_MiniPascal.py',30),
+  ('declarations -> VAR declaration_list','declarations',2,'p_declarations_var_only','Parser_MiniPascal.py',34),
+  ('declarations -> procedure_declarations','declarations',1,'p_declarations_proc_only','Parser_MiniPascal.py',38),
+  ('declarations -> empty','declarations',1,'p_declarations_empty','Parser_MiniPascal.py',42),
+  ('declaration_list -> declaration','declaration_list',1,'p_declaration_list','Parser_MiniPascal.py',47),
+  ('declaration_list -> declaration_list declaration','declaration_list',2,'p_declaration_list','Parser_MiniPascal.py',48),
+  ('declaration -> id_list COLON type_specifier SEMICOLON','declaration',4,'p_declaration','Parser_MiniPascal.py',56),
+  ('id_list -> ID','id_list',1,'p_id_list_single','Parser_MiniPascal.py',61),
+  ('id_list -> id_list COMMA ID','id_list',3,'p_id_list_multi','Parser_MiniPascal.py',65),
+  ('type_specifier -> INTEGER','type_specifier',1,'p_type_specifier_int','Parser_MiniPascal.py',70),
+  ('type_specifier -> ARRAY LBRACKET NUMBER DOTDOT NUMBER RBRACKET OF INTEGER','type_specifier',8,'p_type_specifier_array','Parser_MiniPascal.py',75),
+  ('procedure_declarations -> procedure_declaration','procedure_declarations',1,'p_procedure_declarations','Parser_MiniPascal.py',81),
+  ('procedure_declarations -> procedure_declarations procedure_declaration','procedure_declarations',2,'p_procedure_declarations','Parser_MiniPascal.py',82),
+  ('procedure_declaration -> PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON block SEMICOLON','procedure_declaration',8,'p_procedure_declaration','Parser_MiniPascal.py',92),
+  ('parameter_list -> id_list COLON type_specifier','parameter_list',3,'p_parameter_list','Parser_MiniPascal.py',97),
+  ('compound_statement -> BEGIN statement_list END','compound_statement',3,'p_compound_statement','Parser_MiniPascal.py',102),
+  ('statement_list -> statement statement_list_tail','statement_list',2,'p_statement_list_multi','Parser_MiniPascal.py',107),
+  ('statement_list_tail -> SEMICOLON statement statement_list_tail','statement_list_tail',3,'p_statement_list_tail','Parser_MiniPascal.py',111),
+  ('statement_list_tail -> empty','statement_list_tail',1,'p_statement_list_tail','Parser_MiniPascal.py',112),
+  ('statement -> assignment_statement','statement',1,'p_statement_assignment','Parser_MiniPascal.py',120),
+  ('statement -> if_statement','statement',1,'p_statement_if','Parser_MiniPascal.py',124),
+  ('statement -> while_statement','statement',1,'p_statement_while','Parser_MiniPascal.py',128),
+  ('statement -> procedure_call','statement',1,'p_statement_proc_call','Parser_MiniPascal.py',132),
+  ('statement -> compound_statement','statement',1,'p_statement_compound','Parser_MiniPascal.py',136),
+  ('statement -> empty','statement',1,'p_statement_empty','Parser_MiniPascal.py',140),
+  ('assignment_statement -> variable COLON_EQUAL expression','assignment_statement',3,'p_assignment_statement','Parser_MiniPascal.py',145),
+  ('variable -> ID','variable',1,'p_variable_simple','Parser_MiniPascal.py',150),
+  ('variable -> ID LBRACKET expression RBRACKET','variable',4,'p_variable_index','Parser_MiniPascal.py',154),
+  ('if_statement -> IF expression THEN statement ELSE statement','if_statement',6,'p_if_statement','Parser_MiniPascal.py',159),
+  ('while_statement -> WHILE expression DO statement','while_statement',4,'p_while_statement','Parser_MiniPascal.py',164),
+  ('procedure_call -> ID LPAREN expression_list RPAREN','procedure_call',4,'p_procedure_call','Parser_MiniPascal.py',169),
+  ('expression_list -> expression expression_list_tail','expression_list',2,'p_expression_list_multi','Parser_MiniPascal.py',174),
+  ('expression_list_tail -> COMMA expression','expression_list_tail',2,'p_expression_list_tail','Parser_MiniPascal.py',178),
+  ('expression_list_tail -> empty','expression_list_tail',1,'p_expression_list_tail','Parser_MiniPascal.py',179),
+  ('expression_list -> empty','expression_list',1,'p_expression_list_empty','Parser_MiniPascal.py',186),
+  ('expression -> simple_expression relop simple_expression','expression',3,'p_expression','Parser_MiniPascal.py',191),
+  ('expression -> simple_expression','expression',1,'p_expression','Parser_MiniPascal.py',192),
+  ('simple_expression -> term simple_expression_tail','simple_expression',2,'p_simple_expression','Parser_MiniPascal.py',200),
+  ('simple_expression_tail -> addop term','simple_expression_tail',2,'p_simple_expression_tail','Parser_MiniPascal.py',207),
+  ('simple_expression_tail -> empty','simple_expression_tail',1,'p_simple_expression_tail','Parser_MiniPascal.py',208),
+  ('addop -> PLUS','addop',1,'p_addop','Parser_MiniPascal.py',215),
+  ('addop -> MINUS','addop',1,'p_addop','Parser_MiniPascal.py',216),
+  ('term -> factor term_tail','term',2,'p_term','Parser_MiniPascal.py',221),
+  ('term_tail -> mulop factor','term_tail',2,'p_term_tail','Parser_MiniPascal.py',228),
+  ('term_tail -> empty','term_tail',1,'p_term_tail','Parser_MiniPascal.py',229),
+  ('mulop -> TIMES','mulop',1,'p_mulop','Parser_MiniPascal.py',236),
+  ('mulop -> DIVIDE','mulop',1,'p_mulop','Parser_MiniPascal.py',237),
+  ('factor -> LPAREN expression RPAREN','factor',3,'p_factor_expr','Parser_MiniPascal.py',242),
+  ('factor -> variable','factor',1,'p_factor_variable','Parser_MiniPascal.py',246),
+  ('factor -> NUMBER','factor',1,'p_factor_number','Parser_MiniPascal.py',250),
+  ('factor -> STRING','factor',1,'p_factor_string','Parser_MiniPascal.py',254),
+  ('relop -> LESS','relop',1,'p_relop','Parser_MiniPascal.py',259),
+  ('relop -> LESS_EQUAL','relop',1,'p_relop','Parser_MiniPascal.py',260),
+  ('relop -> GREAT','relop',1,'p_relop','Parser_MiniPascal.py',261),
+  ('relop -> GREAT_EQUAL','relop',1,'p_relop','Parser_MiniPascal.py',262),
+  ('relop -> EQUAL','relop',1,'p_relop','Parser_MiniPascal.py',263),
+  ('relop -> DIFFERENT','relop',1,'p_relop','Parser_MiniPascal.py',264),
+  ('empty -> <empty>','empty',0,'p_empty','Parser_MiniPascal.py',269),
+  ('statement -> READLINE','statement',1,'p_statement_readln','Parser_MiniPascal.py',273),
+  ('statement -> WRITELN LPAREN expression_list RPAREN','statement',4,'p_statement_writeln','Parser_MiniPascal.py',277),
+  ('statement -> USES ID SEMICOLON','statement',3,'p_statement_uses','Parser_MiniPascal.py',282),
 ]
