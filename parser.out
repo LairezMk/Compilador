@@ -25,10 +25,11 @@ Unused terminals:
     OR
     PACKED
     RBLOCK
+    READLINE
     RECORD
     REPEAT
     SET
-    STRING_LITERAL
+    STRING
     TO
     TRUE
     TYPE
@@ -75,7 +76,7 @@ Rule 33    if_statement -> IF expression THEN statement ELSE statement
 Rule 34    while_statement -> WHILE expression DO statement
 Rule 35    procedure_call -> ID LPAREN expression_list RPAREN
 Rule 36    expression_list -> expression expression_list_tail
-Rule 37    expression_list_tail -> COMMA expression
+Rule 37    expression_list_tail -> COMMA expression expression_list_tail
 Rule 38    expression_list_tail -> empty
 Rule 39    expression_list -> empty
 Rule 40    expression -> simple_expression relop simple_expression
@@ -93,7 +94,7 @@ Rule 51    mulop -> DIVIDE
 Rule 52    factor -> LPAREN expression RPAREN
 Rule 53    factor -> variable
 Rule 54    factor -> NUMBER
-Rule 55    factor -> STRING
+Rule 55    factor -> STRING_LITERAL
 Rule 56    relop -> LESS
 Rule 57    relop -> LESS_EQUAL
 Rule 58    relop -> GREAT
@@ -101,7 +102,7 @@ Rule 59    relop -> GREAT_EQUAL
 Rule 60    relop -> EQUAL
 Rule 61    relop -> DIFFERENT
 Rule 62    empty -> <empty>
-Rule 63    statement -> READLINE
+Rule 63    statement -> READLN
 Rule 64    statement -> WRITELN LPAREN expression_list RPAREN
 Rule 65    statement -> USES ID SEMICOLON
 
@@ -159,14 +160,15 @@ PROCEDURE            : 18
 PROGRAM              : 1
 RBLOCK               : 
 RBRACKET             : 15 32
-READLINE             : 63
+READLINE             : 
+READLN               : 63
 RECORD               : 
 REPEAT               : 
 RPAREN               : 18 35 52 64
 SEMICOLON            : 1 2 11 18 18 22 65
 SET                  : 
-STRING               : 55
-STRING_LITERAL       : 
+STRING               : 
+STRING_LITERAL       : 55
 THEN                 : 33
 TIMES                : 50
 TO                   : 
@@ -193,7 +195,7 @@ declarations         : 4
 empty                : 3 8 23 29 38 39 44 49
 expression           : 30 32 33 34 36 37 52
 expression_list      : 35 64
-expression_list_tail : 36
+expression_list_tail : 36 37
 factor               : 47 48
 id_list              : 11 13 19
 if_statement         : 25
@@ -398,7 +400,7 @@ state 18
     (27) statement -> . procedure_call
     (28) statement -> . compound_statement
     (29) statement -> . empty
-    (63) statement -> . READLINE
+    (63) statement -> . READLN
     (64) statement -> . WRITELN LPAREN expression_list RPAREN
     (65) statement -> . USES ID SEMICOLON
     (30) assignment_statement -> . variable COLON_EQUAL expression
@@ -410,7 +412,7 @@ state 18
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
-    READLINE        shift and go to state 34
+    READLN          shift and go to state 34
     WRITELN         shift and go to state 35
     USES            shift and go to state 36
     IF              shift and go to state 39
@@ -577,11 +579,11 @@ state 33
 
 state 34
 
-    (63) statement -> READLINE .
+    (63) statement -> READLN .
 
-    SEMICOLON       reduce using rule 63 (statement -> READLINE .)
-    END             reduce using rule 63 (statement -> READLINE .)
-    ELSE            reduce using rule 63 (statement -> READLINE .)
+    SEMICOLON       reduce using rule 63 (statement -> READLN .)
+    END             reduce using rule 63 (statement -> READLN .)
+    ELSE            reduce using rule 63 (statement -> READLN .)
 
 
 state 35
@@ -626,13 +628,13 @@ state 39
     (52) factor -> . LPAREN expression RPAREN
     (53) factor -> . variable
     (54) factor -> . NUMBER
-    (55) factor -> . STRING
+    (55) factor -> . STRING_LITERAL
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
     LPAREN          shift and go to state 59
     NUMBER          shift and go to state 61
-    STRING          shift and go to state 62
+    STRING_LITERAL  shift and go to state 62
     ID              shift and go to state 63
 
     expression                     shift and go to state 55
@@ -651,13 +653,13 @@ state 40
     (52) factor -> . LPAREN expression RPAREN
     (53) factor -> . variable
     (54) factor -> . NUMBER
-    (55) factor -> . STRING
+    (55) factor -> . STRING_LITERAL
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
     LPAREN          shift and go to state 59
     NUMBER          shift and go to state 61
-    STRING          shift and go to state 62
+    STRING_LITERAL  shift and go to state 62
     ID              shift and go to state 63
 
     expression                     shift and go to state 64
@@ -742,7 +744,7 @@ state 48
     (27) statement -> . procedure_call
     (28) statement -> . compound_statement
     (29) statement -> . empty
-    (63) statement -> . READLINE
+    (63) statement -> . READLN
     (64) statement -> . WRITELN LPAREN expression_list RPAREN
     (65) statement -> . USES ID SEMICOLON
     (30) assignment_statement -> . variable COLON_EQUAL expression
@@ -754,7 +756,7 @@ state 48
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
-    READLINE        shift and go to state 34
+    READLN          shift and go to state 34
     WRITELN         shift and go to state 35
     USES            shift and go to state 36
     IF              shift and go to state 39
@@ -793,14 +795,14 @@ state 50
     (52) factor -> . LPAREN expression RPAREN
     (53) factor -> . variable
     (54) factor -> . NUMBER
-    (55) factor -> . STRING
+    (55) factor -> . STRING_LITERAL
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
     RPAREN          reduce using rule 62 (empty -> .)
     LPAREN          shift and go to state 59
     NUMBER          shift and go to state 61
-    STRING          shift and go to state 62
+    STRING_LITERAL  shift and go to state 62
     ID              shift and go to state 63
 
     expression_list                shift and go to state 72
@@ -831,14 +833,14 @@ state 52
     (52) factor -> . LPAREN expression RPAREN
     (53) factor -> . variable
     (54) factor -> . NUMBER
-    (55) factor -> . STRING
+    (55) factor -> . STRING_LITERAL
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
     RPAREN          reduce using rule 62 (empty -> .)
     LPAREN          shift and go to state 59
     NUMBER          shift and go to state 61
-    STRING          shift and go to state 62
+    STRING_LITERAL  shift and go to state 62
     ID              shift and go to state 63
 
     expression_list                shift and go to state 76
@@ -859,13 +861,13 @@ state 53
     (52) factor -> . LPAREN expression RPAREN
     (53) factor -> . variable
     (54) factor -> . NUMBER
-    (55) factor -> . STRING
+    (55) factor -> . STRING_LITERAL
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
     LPAREN          shift and go to state 59
     NUMBER          shift and go to state 61
-    STRING          shift and go to state 62
+    STRING_LITERAL  shift and go to state 62
     ID              shift and go to state 63
 
     expression                     shift and go to state 77
@@ -884,13 +886,13 @@ state 54
     (52) factor -> . LPAREN expression RPAREN
     (53) factor -> . variable
     (54) factor -> . NUMBER
-    (55) factor -> . STRING
+    (55) factor -> . STRING_LITERAL
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
     LPAREN          shift and go to state 59
     NUMBER          shift and go to state 61
-    STRING          shift and go to state 62
+    STRING_LITERAL  shift and go to state 62
     ID              shift and go to state 63
 
     variable                       shift and go to state 60
@@ -1006,13 +1008,13 @@ state 59
     (52) factor -> . LPAREN expression RPAREN
     (53) factor -> . variable
     (54) factor -> . NUMBER
-    (55) factor -> . STRING
+    (55) factor -> . STRING_LITERAL
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
     LPAREN          shift and go to state 59
     NUMBER          shift and go to state 61
-    STRING          shift and go to state 62
+    STRING_LITERAL  shift and go to state 62
     ID              shift and go to state 63
 
     expression                     shift and go to state 97
@@ -1071,26 +1073,26 @@ state 61
 
 state 62
 
-    (55) factor -> STRING .
+    (55) factor -> STRING_LITERAL .
 
-    TIMES           reduce using rule 55 (factor -> STRING .)
-    DIVIDE          reduce using rule 55 (factor -> STRING .)
-    PLUS            reduce using rule 55 (factor -> STRING .)
-    MINUS           reduce using rule 55 (factor -> STRING .)
-    LESS            reduce using rule 55 (factor -> STRING .)
-    LESS_EQUAL      reduce using rule 55 (factor -> STRING .)
-    GREAT           reduce using rule 55 (factor -> STRING .)
-    GREAT_EQUAL     reduce using rule 55 (factor -> STRING .)
-    EQUAL           reduce using rule 55 (factor -> STRING .)
-    DIFFERENT       reduce using rule 55 (factor -> STRING .)
-    THEN            reduce using rule 55 (factor -> STRING .)
-    DO              reduce using rule 55 (factor -> STRING .)
-    COMMA           reduce using rule 55 (factor -> STRING .)
-    RPAREN          reduce using rule 55 (factor -> STRING .)
-    RBRACKET        reduce using rule 55 (factor -> STRING .)
-    SEMICOLON       reduce using rule 55 (factor -> STRING .)
-    END             reduce using rule 55 (factor -> STRING .)
-    ELSE            reduce using rule 55 (factor -> STRING .)
+    TIMES           reduce using rule 55 (factor -> STRING_LITERAL .)
+    DIVIDE          reduce using rule 55 (factor -> STRING_LITERAL .)
+    PLUS            reduce using rule 55 (factor -> STRING_LITERAL .)
+    MINUS           reduce using rule 55 (factor -> STRING_LITERAL .)
+    LESS            reduce using rule 55 (factor -> STRING_LITERAL .)
+    LESS_EQUAL      reduce using rule 55 (factor -> STRING_LITERAL .)
+    GREAT           reduce using rule 55 (factor -> STRING_LITERAL .)
+    GREAT_EQUAL     reduce using rule 55 (factor -> STRING_LITERAL .)
+    EQUAL           reduce using rule 55 (factor -> STRING_LITERAL .)
+    DIFFERENT       reduce using rule 55 (factor -> STRING_LITERAL .)
+    THEN            reduce using rule 55 (factor -> STRING_LITERAL .)
+    DO              reduce using rule 55 (factor -> STRING_LITERAL .)
+    COMMA           reduce using rule 55 (factor -> STRING_LITERAL .)
+    RPAREN          reduce using rule 55 (factor -> STRING_LITERAL .)
+    RBRACKET        reduce using rule 55 (factor -> STRING_LITERAL .)
+    SEMICOLON       reduce using rule 55 (factor -> STRING_LITERAL .)
+    END             reduce using rule 55 (factor -> STRING_LITERAL .)
+    ELSE            reduce using rule 55 (factor -> STRING_LITERAL .)
 
 
 state 63
@@ -1195,7 +1197,7 @@ state 72
 state 73
 
     (36) expression_list -> expression . expression_list_tail
-    (37) expression_list_tail -> . COMMA expression
+    (37) expression_list_tail -> . COMMA expression expression_list_tail
     (38) expression_list_tail -> . empty
     (62) empty -> .
 
@@ -1253,7 +1255,7 @@ state 79
     (27) statement -> . procedure_call
     (28) statement -> . compound_statement
     (29) statement -> . empty
-    (63) statement -> . READLINE
+    (63) statement -> . READLN
     (64) statement -> . WRITELN LPAREN expression_list RPAREN
     (65) statement -> . USES ID SEMICOLON
     (30) assignment_statement -> . variable COLON_EQUAL expression
@@ -1265,7 +1267,7 @@ state 79
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
-    READLINE        shift and go to state 34
+    READLN          shift and go to state 34
     WRITELN         shift and go to state 35
     USES            shift and go to state 36
     IF              shift and go to state 39
@@ -1291,13 +1293,13 @@ state 80
     (52) factor -> . LPAREN expression RPAREN
     (53) factor -> . variable
     (54) factor -> . NUMBER
-    (55) factor -> . STRING
+    (55) factor -> . STRING_LITERAL
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
     LPAREN          shift and go to state 59
     NUMBER          shift and go to state 61
-    STRING          shift and go to state 62
+    STRING_LITERAL  shift and go to state 62
     ID              shift and go to state 63
 
     simple_expression              shift and go to state 111
@@ -1311,7 +1313,7 @@ state 81
 
     LPAREN          reduce using rule 56 (relop -> LESS .)
     NUMBER          reduce using rule 56 (relop -> LESS .)
-    STRING          reduce using rule 56 (relop -> LESS .)
+    STRING_LITERAL  reduce using rule 56 (relop -> LESS .)
     ID              reduce using rule 56 (relop -> LESS .)
 
 
@@ -1321,7 +1323,7 @@ state 82
 
     LPAREN          reduce using rule 57 (relop -> LESS_EQUAL .)
     NUMBER          reduce using rule 57 (relop -> LESS_EQUAL .)
-    STRING          reduce using rule 57 (relop -> LESS_EQUAL .)
+    STRING_LITERAL  reduce using rule 57 (relop -> LESS_EQUAL .)
     ID              reduce using rule 57 (relop -> LESS_EQUAL .)
 
 
@@ -1331,7 +1333,7 @@ state 83
 
     LPAREN          reduce using rule 58 (relop -> GREAT .)
     NUMBER          reduce using rule 58 (relop -> GREAT .)
-    STRING          reduce using rule 58 (relop -> GREAT .)
+    STRING_LITERAL  reduce using rule 58 (relop -> GREAT .)
     ID              reduce using rule 58 (relop -> GREAT .)
 
 
@@ -1341,7 +1343,7 @@ state 84
 
     LPAREN          reduce using rule 59 (relop -> GREAT_EQUAL .)
     NUMBER          reduce using rule 59 (relop -> GREAT_EQUAL .)
-    STRING          reduce using rule 59 (relop -> GREAT_EQUAL .)
+    STRING_LITERAL  reduce using rule 59 (relop -> GREAT_EQUAL .)
     ID              reduce using rule 59 (relop -> GREAT_EQUAL .)
 
 
@@ -1351,7 +1353,7 @@ state 85
 
     LPAREN          reduce using rule 60 (relop -> EQUAL .)
     NUMBER          reduce using rule 60 (relop -> EQUAL .)
-    STRING          reduce using rule 60 (relop -> EQUAL .)
+    STRING_LITERAL  reduce using rule 60 (relop -> EQUAL .)
     ID              reduce using rule 60 (relop -> EQUAL .)
 
 
@@ -1361,7 +1363,7 @@ state 86
 
     LPAREN          reduce using rule 61 (relop -> DIFFERENT .)
     NUMBER          reduce using rule 61 (relop -> DIFFERENT .)
-    STRING          reduce using rule 61 (relop -> DIFFERENT .)
+    STRING_LITERAL  reduce using rule 61 (relop -> DIFFERENT .)
     ID              reduce using rule 61 (relop -> DIFFERENT .)
 
 
@@ -1392,13 +1394,13 @@ state 88
     (52) factor -> . LPAREN expression RPAREN
     (53) factor -> . variable
     (54) factor -> . NUMBER
-    (55) factor -> . STRING
+    (55) factor -> . STRING_LITERAL
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
     LPAREN          shift and go to state 59
     NUMBER          shift and go to state 61
-    STRING          shift and go to state 62
+    STRING_LITERAL  shift and go to state 62
     ID              shift and go to state 63
 
     term                           shift and go to state 112
@@ -1431,7 +1433,7 @@ state 90
 
     LPAREN          reduce using rule 45 (addop -> PLUS .)
     NUMBER          reduce using rule 45 (addop -> PLUS .)
-    STRING          reduce using rule 45 (addop -> PLUS .)
+    STRING_LITERAL  reduce using rule 45 (addop -> PLUS .)
     ID              reduce using rule 45 (addop -> PLUS .)
 
 
@@ -1441,7 +1443,7 @@ state 91
 
     LPAREN          reduce using rule 46 (addop -> MINUS .)
     NUMBER          reduce using rule 46 (addop -> MINUS .)
-    STRING          reduce using rule 46 (addop -> MINUS .)
+    STRING_LITERAL  reduce using rule 46 (addop -> MINUS .)
     ID              reduce using rule 46 (addop -> MINUS .)
 
 
@@ -1473,13 +1475,13 @@ state 93
     (52) factor -> . LPAREN expression RPAREN
     (53) factor -> . variable
     (54) factor -> . NUMBER
-    (55) factor -> . STRING
+    (55) factor -> . STRING_LITERAL
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
     LPAREN          shift and go to state 59
     NUMBER          shift and go to state 61
-    STRING          shift and go to state 62
+    STRING_LITERAL  shift and go to state 62
     ID              shift and go to state 63
 
     factor                         shift and go to state 113
@@ -1513,7 +1515,7 @@ state 95
 
     LPAREN          reduce using rule 50 (mulop -> TIMES .)
     NUMBER          reduce using rule 50 (mulop -> TIMES .)
-    STRING          reduce using rule 50 (mulop -> TIMES .)
+    STRING_LITERAL  reduce using rule 50 (mulop -> TIMES .)
     ID              reduce using rule 50 (mulop -> TIMES .)
 
 
@@ -1523,7 +1525,7 @@ state 96
 
     LPAREN          reduce using rule 51 (mulop -> DIVIDE .)
     NUMBER          reduce using rule 51 (mulop -> DIVIDE .)
-    STRING          reduce using rule 51 (mulop -> DIVIDE .)
+    STRING_LITERAL  reduce using rule 51 (mulop -> DIVIDE .)
     ID              reduce using rule 51 (mulop -> DIVIDE .)
 
 
@@ -1543,7 +1545,7 @@ state 98
     (27) statement -> . procedure_call
     (28) statement -> . compound_statement
     (29) statement -> . empty
-    (63) statement -> . READLINE
+    (63) statement -> . READLN
     (64) statement -> . WRITELN LPAREN expression_list RPAREN
     (65) statement -> . USES ID SEMICOLON
     (30) assignment_statement -> . variable COLON_EQUAL expression
@@ -1555,7 +1557,7 @@ state 98
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
-    READLINE        shift and go to state 34
+    READLN          shift and go to state 34
     WRITELN         shift and go to state 35
     USES            shift and go to state 36
     IF              shift and go to state 39
@@ -1634,7 +1636,7 @@ state 105
 
 state 106
 
-    (37) expression_list_tail -> COMMA . expression
+    (37) expression_list_tail -> COMMA . expression expression_list_tail
     (40) expression -> . simple_expression relop simple_expression
     (41) expression -> . simple_expression
     (42) simple_expression -> . term simple_expression_tail
@@ -1642,13 +1644,13 @@ state 106
     (52) factor -> . LPAREN expression RPAREN
     (53) factor -> . variable
     (54) factor -> . NUMBER
-    (55) factor -> . STRING
+    (55) factor -> . STRING_LITERAL
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
     LPAREN          shift and go to state 59
     NUMBER          shift and go to state 61
-    STRING          shift and go to state 62
+    STRING_LITERAL  shift and go to state 62
     ID              shift and go to state 63
 
     expression                     shift and go to state 119
@@ -1833,10 +1835,16 @@ state 118
 
 state 119
 
-    (37) expression_list_tail -> COMMA expression .
+    (37) expression_list_tail -> COMMA expression . expression_list_tail
+    (37) expression_list_tail -> . COMMA expression expression_list_tail
+    (38) expression_list_tail -> . empty
+    (62) empty -> .
 
-    RPAREN          reduce using rule 37 (expression_list_tail -> COMMA expression .)
+    COMMA           shift and go to state 106
+    RPAREN          reduce using rule 62 (empty -> .)
 
+    expression_list_tail           shift and go to state 123
+    empty                          shift and go to state 107
 
 state 120
 
@@ -1847,7 +1855,7 @@ state 120
     (27) statement -> . procedure_call
     (28) statement -> . compound_statement
     (29) statement -> . empty
-    (63) statement -> . READLINE
+    (63) statement -> . READLN
     (64) statement -> . WRITELN LPAREN expression_list RPAREN
     (65) statement -> . USES ID SEMICOLON
     (30) assignment_statement -> . variable COLON_EQUAL expression
@@ -1859,7 +1867,7 @@ state 120
     (31) variable -> . ID
     (32) variable -> . ID LBRACKET expression RBRACKET
 
-    READLINE        shift and go to state 34
+    READLN          shift and go to state 34
     WRITELN         shift and go to state 35
     USES            shift and go to state 36
     IF              shift and go to state 39
@@ -1870,7 +1878,7 @@ state 120
     END             reduce using rule 62 (empty -> .)
     ELSE            reduce using rule 62 (empty -> .)
 
-    statement                      shift and go to state 123
+    statement                      shift and go to state 124
     assignment_statement           shift and go to state 28
     if_statement                   shift and go to state 29
     while_statement                shift and go to state 30
@@ -1883,17 +1891,24 @@ state 121
 
     (15) type_specifier -> ARRAY LBRACKET NUMBER DOTDOT . NUMBER RBRACKET OF INTEGER
 
-    NUMBER          shift and go to state 124
+    NUMBER          shift and go to state 125
 
 
 state 122
 
     (18) procedure_declaration -> PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON block . SEMICOLON
 
-    SEMICOLON       shift and go to state 125
+    SEMICOLON       shift and go to state 126
 
 
 state 123
+
+    (37) expression_list_tail -> COMMA expression expression_list_tail .
+
+    RPAREN          reduce using rule 37 (expression_list_tail -> COMMA expression expression_list_tail .)
+
+
+state 124
 
     (33) if_statement -> IF expression THEN statement ELSE statement .
 
@@ -1902,14 +1917,14 @@ state 123
     ELSE            reduce using rule 33 (if_statement -> IF expression THEN statement ELSE statement .)
 
 
-state 124
+state 125
 
     (15) type_specifier -> ARRAY LBRACKET NUMBER DOTDOT NUMBER . RBRACKET OF INTEGER
 
-    RBRACKET        shift and go to state 126
+    RBRACKET        shift and go to state 127
 
 
-state 125
+state 126
 
     (18) procedure_declaration -> PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON block SEMICOLON .
 
@@ -1917,21 +1932,21 @@ state 125
     BEGIN           reduce using rule 18 (procedure_declaration -> PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON block SEMICOLON .)
 
 
-state 126
+state 127
 
     (15) type_specifier -> ARRAY LBRACKET NUMBER DOTDOT NUMBER RBRACKET . OF INTEGER
 
-    OF              shift and go to state 127
-
-
-state 127
-
-    (15) type_specifier -> ARRAY LBRACKET NUMBER DOTDOT NUMBER RBRACKET OF . INTEGER
-
-    INTEGER         shift and go to state 128
+    OF              shift and go to state 128
 
 
 state 128
+
+    (15) type_specifier -> ARRAY LBRACKET NUMBER DOTDOT NUMBER RBRACKET OF . INTEGER
+
+    INTEGER         shift and go to state 129
+
+
+state 129
 
     (15) type_specifier -> ARRAY LBRACKET NUMBER DOTDOT NUMBER RBRACKET OF INTEGER .
 

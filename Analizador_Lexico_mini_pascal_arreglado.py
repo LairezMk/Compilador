@@ -80,6 +80,7 @@ tokens = (
     'STRING', # Para cadenas de texto
     'READLINE', # Para leer líneas
     'DOTDOT', # Para ".."
+    'READLN' # Para leer líneas
     
 )
 
@@ -213,6 +214,10 @@ def t_PROGRAM(t):
 
 def t_REPEAT(t):
     r'\brepeat\b'
+    return t
+
+def t_READLN(t):
+    r'\breadln\b'
     return t
 
 def t_SHL(t):

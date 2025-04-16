@@ -1,31 +1,40 @@
-program TorreDeHanoi;
-uses crt;
-
-(* Procedimiento recursivo para resolver la Torre de Hanoi *)
-procedure Hanoi(n: integer, origen, auxiliar, destino: Char);
-begin
-  if n = 1 then
-    WriteLn('Mover disco de ', origen, ' a ', destino)
-  else
-  begin
-    Hanoi(n - 1, origen, destino, auxiliar);  (* Mover n-1 discos a la varilla auxiliar *)
-    WriteLn('Mover disco de ', origen, ' a ', destino); (* Mover el disco más grande al destino *)
-    Hanoi(n - 1, auxiliar, origen, destino);  (* Mover los n-1 discos desde la auxiliar al destino *)
-  end;
-end;
+program EjemploCompleto;
 
 var
-  numDiscos: Integer;
+  i, total: integer;
+  numeros: array[1..5] of integer;
+
+procedure sumar_elementos(arr: array[1..5] of integer);
+var
+  suma, j: integer;
 begin
-  clrscr;
-  
-  (* Solicitar al usuario el número de discos *)
-  Write('Ingrese el número de discos: ');
-  ReadLn(numDiscos);
-  
-  (* Llamar a la función recursiva con las varillas A, B y C *)
-  WriteLn('Movimientos necesarios para resolver la Torre de Hanoi:');
-  Hanoi(numDiscos, 'A', 'B', 'C');
-  
-  ReadLn;
+  suma := 0;
+  j := 1;
+  while j <= 5 do
+  begin
+    suma := suma + arr[j];
+    j := j + 1;
+  end;
+  writeln('La suma de los elementos es: ', suma);
+end;
+
+begin
+  i := 1;
+  while i <= 5 do
+  begin
+    numeros[i] := i * 2;
+    i := i + 1;
+  end;
+
+  writeln('Mostrando los elementos del arreglo:');
+  i := 1;
+  while i <= 5 do
+  begin
+    writeln('Elemento ', i, ': ', numeros[i]);
+    i := i + 1;
+  end;
+
+  sumar_elementos(numeros);
+
+  readln;
 end.

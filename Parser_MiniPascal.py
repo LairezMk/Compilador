@@ -175,12 +175,12 @@ def p_expression_list_multi(p):
     p[0] = [p[1]] + p[2]
     
 def p_expression_list_tail(p):
-    '''expression_list_tail : COMMA expression
+    '''expression_list_tail : COMMA expression expression_list_tail
                             | empty'''
     if len(p) == 2:
         p[0] = []
     else:
-        p[0] = [p[2]]
+        p[0] = [p[2]] + p[3]
         
 def p_expression_list_empty(p):
     'expression_list : empty'
@@ -251,7 +251,7 @@ def p_factor_number(p):
     p[0] = ('num', p[1])
 
 def p_factor_string(p):
-    'factor : STRING'
+    'factor : STRING_LITERAL'
     p[0] = ('string', p[1])
     
 # relop: operadores relacionales.
@@ -270,7 +270,7 @@ def p_empty(p):
     p[0] = None
 
 def p_statement_readln(p):
-    'statement : READLINE'
+    'statement : READLN'
     p[0] = ('readln',)
 
 def p_statement_writeln(p):
@@ -282,16 +282,18 @@ def p_statement_uses(p):
     'statement : USES ID SEMICOLON'
     p[0] = ('uses', p[2])
 
-
-
-
 # Manejo de errores sintácticos
 def p_error(p):
     global hay_error
     hay_error = True
     if VERBOSE:
         if p is not None:
-            print("ERROR SINTÁCTICO EN LA LÍNEA " + str(p.lexer.lineno) + " NO SE ESPERABA EL Token '" + str(p.value) + "'")
+            # Calcular la posición relativa dentro de la línea
+            line_start = p.lexer.lexdata.rfind('\n', 0, p.lexpos) + 1
+            column = p.lexpos - line_start + 1
+            print("ERROR SINTÁCTICO EN LA LÍNEA " + str(p.lexer.lineno) + 
+                  " NO SE ESPERABA EL Token '" + str(p.value) + 
+                  "' EN LA POSICIÓN " + str(column) + ".")
         else:
             print("ERROR SINTÁCTICO AL FINAL DE LA ENTRADA: Entrada incompleta o token inesperado al final.")
     else:
