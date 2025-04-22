@@ -1,12 +1,81 @@
-program Factorial;
+program MergeSortPascal;
+const
+  MAX = 100;
+
+type
+  TArray = array[1..MAX] of integer;
+
 var
-  i, n: Integer;
-  fact: LongInt;
+  A: TArray;
+  i, n: integer;
+
+procedure Merge(var A: TArray; l, m, r: integer);
+var
+  i, j, k, n1, n2: integer;
+  L, R: TArray;
 begin
-  write('Ingrese un número: ');
+  n1 := m - l + 1;
+  n2 := r - m;
+
+  for i := 1 to n1 do
+    L[i] := A[l + i - 1];
+  for j := 1 to n2 do
+    R[j] := A[m + j];
+
+  i := 1;
+  j := 1;
+  k := l;
+
+  while (i <= n1) and (j <= n2) do
+  begin
+    if L[i] <= R[j] then
+    begin
+      A[k] := L[i];
+      i := i + 1;
+    end
+    else
+    begin
+      A[k] := R[j];
+      j := j + 1;
+    end;
+    k := k + 1;
+  end;
+
+  while i <= n1 do
+  begin
+    A[k] := L[i];
+    i := i + 1;
+    k := k + 1;
+  end;
+
+  while j <= n2 do
+  begin
+    A[k] := R[j];
+    j := j + 1;
+    k := k + 1;
+  end;
+end;
+
+procedure MergeSort(var A: TArray; l, r: integer);
+var
+  m: integer;
+begin
+  if l < r then
+  begin
+    m := (l + r) div 2;
+    MergeSort(A, l, m);
+    MergeSort(A, m + 1, r);
+    Merge(A, l, m, r);
+  end;
+end;
+
+begin
   readln(n);
-  fact := 1;
   for i := 1 to n do
-    fact := fact * i;
-  writeln('El factorial es: ', fact);
+    readln(A[i]);
+
+  MergeSort(A, 1, n);
+
+  for i := 1 to n do
+    writeln(A[i]);
 end.

@@ -9,8 +9,26 @@ hay_error = False  # Variable global para saber si hubo errores
 
 # Reglas de la gramática
 def p_program(p):
-    'program : PROGRAM ID SEMICOLON uses_opt block DOT'
-    p[0] = ('program', p[2], p[4])
+    'program : PROGRAM ID SEMICOLON declaration_sections block DOT'
+    p[0] = ('program', p[2], p[4], p[5])
+
+def p_declaration_sections(p):
+    '''declaration_sections : uses_opt constant_declaration type_declaration var_declaration
+                            | uses_opt constant_declaration type_declaration
+                            | uses_opt constant_declaration var_declaration
+                            | uses_opt constant_declaration
+                            | uses_opt type_declaration var_declaration
+                            | uses_opt type_declaration
+                            | uses_opt var_declaration
+                            | uses_opt
+                            | constant_declaration type_declaration var_declaration
+                            | constant_declaration type_declaration
+                            | constant_declaration var_declaration
+                            | constant_declaration
+                            | type_declaration var_declaration
+                            | type_declaration
+                            | var_declaration'''
+    p[0] = ('declaration_sections', p[1:])
 
 def p_uses_opt(p):
     '''uses_opt : USES ID SEMICOLON
@@ -19,6 +37,22 @@ def p_uses_opt(p):
         p[0] = None
     else:
         p[0] = ('uses', p[2])
+
+def p_var_declaration(p):
+    'var_declaration : VAR declaration_list'
+    p[0] = ('var_section', p[2])
+
+def p_declaration_list(p):
+    '''declaration_list : declaration
+                        | declaration_list declaration'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
+
+def p_declaration(p):
+    'declaration : id_list COLON type_specifier SEMICOLON'
+    p[0] = ('declaration', p[1], p[3])
 
 # El bloque se compone de declaraciones (variables y/o procedimientos) seguidas de una sentencia compuesta.
 def p_block(p):
@@ -65,14 +99,31 @@ def p_id_list_multi(p):
     'id_list : id_list COMMA ID'
     p[0] = p[1] + [p[3]]
 
-# El tipo puede ser simplemente INTEGER o la declaración de un arreglo.
-def p_type_specifier_int(p):
-    'type_specifier : INTEGER'
-    p[0] = 'integer'
+def p_type_declaration(p):
+    'type_declaration : TYPE type_list'
+    p[0] = ('type_section', p[2])
 
-# def p_type_specifier_boolean(p):
-#     'type_specifier : BOOLEAN'
-#     p[0] = 'boolean'
+def p_type_list(p):
+    '''type_list : type_definition
+                 | type_list type_definition'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
+
+def p_type_definition(p):
+    'type_definition : ID EQUAL type_specifier SEMICOLON'
+    p[0] = ('type', p[1], p[3])
+
+def p_type_specifier(p):
+    '''type_specifier : ARRAY LBRACKET expression DOTDOT expression RBRACKET OF type_specifier
+                      | INTEGER
+                      | ID'''
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = ('array', p[3], p[5], p[8])
+
 
 # def p_type_specifier_char(p):
 #     'type_specifier : CHAR'
@@ -85,12 +136,6 @@ def p_type_specifier_int(p):
 def p_type_specifier_longint(p):
     'type_specifier : LONGINT'
     p[0] = 'longint'
-
-# Definición de un arreglo: ARRAY [n1..n2] OF INTEGER.
-def p_type_specifier_array(p):
-    'type_specifier : ARRAY LBRACKET NUMBER DOTDOT NUMBER RBRACKET OF INTEGER'
-    # Devuelve una tupla con el tipo de arreglo y sus límites.
-    p[0] = ('array', p[3], p[5])
 
 # Reglas para las declaraciones de procedimientos.
 def p_procedure_declarations(p):
@@ -107,6 +152,22 @@ def p_procedure_declarations(p):
 def p_procedure_declaration(p):
     'procedure_declaration : PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON block SEMICOLON'
     p[0] = ('procedure', p[2], p[4], p[7])
+
+def p_function_declaration(p):
+    'function_declaration : FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON block SEMICOLON'
+    p[0] = ('function', p[2], p[4], p[7], p[9])
+
+def p_declarations_func_only(p):
+    'declarations : function_declaration'
+    p[0] = ('declarations', [], [p[1]])
+
+def p_function_call(p):
+    'function_call : ID LPAREN expression_list RPAREN'
+    p[0] = ('function_call', p[1], p[3])
+
+def p_factor_function_call(p):
+    'factor : function_call'
+    p[0] = p[1]
     
 # Lista de parámetros: en este ejemplo se permite únicamente una declaración de parámetros.
 def p_parameter_list(p):
@@ -324,13 +385,27 @@ def p_statement_write(p):
     'statement : WRITE LPAREN expression_list RPAREN'
     p[0] = ('write', p[3])
 
-
 #Definición para USES 
 def p_statement_uses(p):
     'statement : USES ID SEMICOLON'
     p[0] = ('uses', p[2])
 
+#Definicion para CONST
+def p_constant_declaration(p):
+    'constant_declaration : CONST constant_list'
+    p[0] = ('const_section', p[2])
 
+def p_constant_list(p):
+    '''constant_list : constant
+                     | constant_list constant'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
+
+def p_constant(p):
+    'constant : ID EQUAL NUMBER SEMICOLON'
+    p[0] = ('const', p[1], p[3])
 
 # Manejo de errores sintácticos
 def p_error(p):
