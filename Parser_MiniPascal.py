@@ -70,6 +70,22 @@ def p_type_specifier_int(p):
     'type_specifier : INTEGER'
     p[0] = 'integer'
 
+# def p_type_specifier_boolean(p):
+#     'type_specifier : BOOLEAN'
+#     p[0] = 'boolean'
+
+# def p_type_specifier_char(p):
+#     'type_specifier : CHAR'
+#     p[0] = 'char'
+
+# def p_type_specifier_byte(p):
+#     'type_specifier : BYTE'
+#     p[0] = 'byte'
+
+def p_type_specifier_longint(p):
+    'type_specifier : LONGINT'
+    p[0] = 'longint'
+
 # Definición de un arreglo: ARRAY [n1..n2] OF INTEGER.
 def p_type_specifier_array(p):
     'type_specifier : ARRAY LBRACKET NUMBER DOTDOT NUMBER RBRACKET OF INTEGER'
@@ -123,6 +139,15 @@ def p_statement_assignment(p):
 def p_statement_if(p):
     'statement : if_statement'
     p[0] = p[1]
+
+# def p_sentencia_for(p):
+#     '''sentencia : FOR ID ASSIGN expresion TO expresion DO sentencia'''
+#     p[0] = ('for', p[2], p[4], p[6], p[8])
+
+def p_statement_for(p):
+    'statement : FOR ID COLON_EQUAL expression TO expression DO statement'
+    p[0] = ('for', p[2], p[4], p[6], p[8])
+
 
 def p_statement_while(p):
     'statement : while_statement'
@@ -234,8 +259,22 @@ def p_term_tail(p):
         
 def p_mulop(p):
     '''mulop : TIMES
-             | DIVIDE'''
+             | DIVIDE
+             | DIV'''
+             
     p[0] = p[1]
+
+
+
+def p_expression_binop(p):
+    '''expression : expression PLUS expression
+                  | expression MINUS expression
+                  | expression TIMES expression
+                  | expression DIVIDE expression
+                  | expression MOD expression'''
+    p[0] = ('binop', p[2], p[1], p[3])
+
+
     
 # factor: puede ser una expresión entre paréntesis, una variable, un número o una cadena.
 def p_factor_expr(p):
@@ -273,14 +312,25 @@ def p_statement_readln(p):
     'statement : READLN'
     p[0] = ('readln',)
 
+def p_statement_readln_parent(p):
+    'statement : READLN LPAREN ID RPAREN'
+    p[0] = ('readln', p[3])
+
 def p_statement_writeln(p):
     'statement : WRITELN LPAREN expression_list RPAREN'
     p[0] = ('writeln', p[3])
+
+def p_statement_write(p):
+    'statement : WRITE LPAREN expression_list RPAREN'
+    p[0] = ('write', p[3])
+
 
 #Definición para USES 
 def p_statement_uses(p):
     'statement : USES ID SEMICOLON'
     p[0] = ('uses', p[2])
+
+
 
 # Manejo de errores sintácticos
 def p_error(p):

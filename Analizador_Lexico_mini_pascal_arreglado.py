@@ -52,6 +52,7 @@ tokens = (
     'CHAR', #Para los caracteres
     'USES', #Para los usos
     'INTEGER', #Para los enteros
+    
 
     #Symbols
     'PLUS',    # Suma "+"
@@ -80,9 +81,63 @@ tokens = (
     'STRING', # Para cadenas de texto
     'READLINE', # Para leer líneas
     'DOTDOT', # Para ".."
-    'READLN' # Para leer líneas
+    'READLN', # Para leer líneas
+    'LONGINT'
     
 )
+
+reserved = {
+    'and': 'AND',
+    'array': 'ARRAY',
+    'begin': 'BEGIN',
+    'case': 'CASE',
+    'const': 'CONST',
+    'div': 'DIV',
+    'do': 'DO',
+    'downto': 'DOWNTO',
+    'else': 'ELSE',
+    'end': 'END',
+    'file': 'FILE',
+    'for': 'FOR',
+    'function': 'FUNCTION',
+    'goto': 'GOTO',
+    'if': 'IF',
+    'in': 'IN',
+    'label': 'LABEL',
+    'mod': 'MOD',
+    'nil': 'NIL',
+    'not': 'NOT',
+    'of': 'OF',
+    'or': 'OR',
+    'packed': 'PACKED',
+    'procedure': 'PROCEDURE',
+    'program': 'PROGRAM',
+    'record': 'RECORD',
+    'repeat': 'REPEAT',
+    'set': 'SET',
+    'then': 'THEN',
+    'to': 'TO',
+    'type': 'TYPE',
+    'until': 'UNTIL',
+    'var': 'VAR',
+    'write': 'WRITE',
+    'writeln': 'WRITELN',
+    'while': 'WHILE',
+    'with': 'WITH',
+    'true': 'BOOLEAN_LITERAL',
+    'false': 'BOOLEAN_LITERAL',
+    'byte': 'BYTE',
+    'char': 'CHAR',
+    'integer': 'INTEGER',
+    'uses': 'USES',
+    'readln': 'READLN',
+    'readline': 'READLINE',
+    'string': 'STRING',
+    'input': 'INPUT',
+    'output': 'OUTPUT',
+    'longint': 'LONGINT',
+
+}
 
 # Regular expression rules for simple tokens
 t_PLUS   = r'\+'
@@ -325,6 +380,7 @@ def t_INPUT(t):
 
 def t_ID(t):
     r'\b[a-zA-Z_][a-zA-Z0-9_]*'
+    t.type = reserved.get(t.value.lower(), 'ID')  # Reconoce palabras reservadas
     return t
 
 def t_newline(t):

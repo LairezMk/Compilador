@@ -1,40 +1,12 @@
-program EjemploCompleto;
-
+program Factorial;
 var
-  i, total: integer;
-  numeros: array[1..5] of integer;
-
-procedure sumar_elementos(arr: array[1..5] of integer);
-var
-  suma, j: integer;
+  i, n: Integer;
+  fact: LongInt;
 begin
-  suma := 0;
-  j := 1;
-  while j <= 5 do
-  begin
-    suma := suma + arr[j];
-    j := j + 1;
-  end;
-  writeln('La suma de los elementos es: ', suma);
-end;
-
-begin
-  i := 1;
-  while i <= 5 do
-  begin
-    numeros[i] := i * 2;
-    i := i + 1;
-  end;
-
-  writeln('Mostrando los elementos del arreglo:');
-  i := 1;
-  while i <= 5 do
-  begin
-    writeln('Elemento ', i, ': ', numeros[i]);
-    i := i + 1;
-  end;
-
-  sumar_elementos(numeros);
-
-  readln;
+  write('Ingrese un número: ');
+  readln(n);
+  fact := 1;
+  for i := 1 to n do
+    fact := fact * i;
+  writeln('El factorial es: ', fact);
 end.
