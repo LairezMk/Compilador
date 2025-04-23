@@ -82,8 +82,7 @@ tokens = (
     'READLINE', # Para leer líneas
     'DOTDOT', # Para ".."
     'READLN', # Para leer líneas
-    'LONGINT'
-    
+    'LONGINT',
 )
 
 reserved = {
@@ -126,6 +125,8 @@ reserved = {
     'with': 'WITH',
     'true': 'BOOLEAN_LITERAL',
     'false': 'BOOLEAN_LITERAL',
+    'TRUE': 'BOOLEAN_LITERAL',
+    'FALSE': 'BOOLEAN_LITERAL',
     'byte': 'BYTE',
     'char': 'CHAR',
     'integer': 'INTEGER',
@@ -352,8 +353,8 @@ def t_READLINE(t):
     return t
 
 def t_NUMBER(t):
-    r'\b\d+\b'
-    t.value = int(t.value)
+    r'\d+(\.\d+)?(?!([a-zA-Z]))'    
+    t.value = float(t.value) if '.' in t.value else int(t.value)
     return t
 
 def t_STRING_LITERAL(t):
@@ -362,12 +363,15 @@ def t_STRING_LITERAL(t):
     return t
 
 def t_CHARACTER_LITERAL(t):
-    r'\'([^\\\n]|(\\.))*?\'|\"([^\\\n]|(\\.))*?\"'
-    t.value = t.value[1:-1]
+    r'\#\d+|\'([^\\\n]|(\\.))*?\'|\"([^\\\n]|(\\.))*?\"'
+    if t.value.startswith('#'):
+        t.value = int(t.value[1:])  # Convierte #<número> a un entero
+    else:
+        t.value = t.value[1:-1]  # Elimina las comillas para caracteres entre comillas
     return t
 
 def t_BOOLEAN_LITERAL(t):
-    r'true|false'
+    r'\btrue\b|\bfalse\b'
     return t
 
 def t_OUTPUT(t):

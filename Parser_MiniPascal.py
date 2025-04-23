@@ -54,12 +54,20 @@ def p_declaration_section(p):
     p[0] = p[1]
 
 def p_uses_opt(p):
-    '''uses_opt : USES ID SEMICOLON
+    '''uses_opt : USES id_list SEMICOLON
                 | empty'''
     if len(p) == 2:
         p[0] = None
     else:
         p[0] = ('uses', p[2])
+
+def p_id_list(p):
+    '''id_list : ID
+               | id_list COMMA ID'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]       
 
 def p_var_declaration(p):
     'var_declaration : VAR declaration_list'
@@ -106,14 +114,14 @@ def p_block(p):
 
 
 
-# id_list: uno o más identificadores separados por comas.
-def p_id_list_single(p):
-    'id_list : ID'
-    p[0] = [p[1]]
+# # id_list: uno o más identificadores separados por comas.
+# def p_id_list_single(p):
+#     'id_list : ID'
+#     p[0] = [p[1]]
     
-def p_id_list_multi(p):
-    'id_list : id_list COMMA ID'
-    p[0] = p[1] + [p[3]]
+# def p_id_list_multi(p):
+#     'id_list : id_list COMMA ID'
+#     p[0] = p[1] + [p[3]]
 
 def p_type_declaration(p):
     'type_declaration : TYPE type_list'
@@ -127,6 +135,10 @@ def p_type_list(p):
     else:
         p[0] = p[1] + [p[2]]
 
+def p_type_specifier_enum(p):
+    '''type_specifier : LPAREN id_list RPAREN'''
+    p[0] = ('enum', p[2])
+
 def p_type_definition(p):
     'type_definition : ID EQUAL type_specifier SEMICOLON'
     p[0] = ('type', p[1], p[3])
@@ -136,7 +148,8 @@ def p_type_specifier(p):
                       | INTEGER
                       | BYTE
                       | CHAR
-                      | ID'''
+                      | ID
+                      | BOOLEAN_LITERAL'''
     if len(p) == 2:
         p[0] = p[1]
     else:
@@ -426,7 +439,8 @@ def p_constant_list(p):
 def p_constant(p):
     '''constant : ID EQUAL CHARACTER_LITERAL SEMICOLON
                 | ID EQUAL NUMBER SEMICOLON
-                | ID EQUAL STRING_LITERAL SEMICOLON'''
+                | ID EQUAL STRING_LITERAL SEMICOLON
+                | ID EQUAL BOOLEAN_LITERAL SEMICOLON'''
     p[0] = ('const', p[1], p[3])
 
 # Expresión lógica
@@ -469,7 +483,7 @@ if __name__ == '__main__':
     else:
         fin = 'Evaluar_Pascal.txt'
 
-    with open(fin, 'r') as f:
+    with open( fin, 'r') as f:
         data = f.read()
 
     parser.parse(data, tracking=True, lexer=lexer)
