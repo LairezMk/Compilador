@@ -18,23 +18,40 @@ def p_program(p):
     'program : PROGRAM ID SEMICOLON declaration_sections block DOT'
     p[0] = ('program', p[2], p[4], p[5])
 
+# def p_declaration_sections(p):
+#     '''declaration_sections : uses_opt constant_declaration type_declaration var_declaration
+#                             | uses_opt constant_declaration type_declaration
+#                             | uses_opt constant_declaration var_declaration
+#                             | uses_opt constant_declaration
+#                             | uses_opt type_declaration var_declaration
+#                             | uses_opt type_declaration
+#                             | uses_opt var_declaration
+#                             | uses_opt
+#                             | constant_declaration type_declaration var_declaration
+#                             | constant_declaration type_declaration
+#                             | constant_declaration var_declaration
+#                             | constant_declaration
+#                             | type_declaration var_declaration
+#                             | type_declaration
+#                             | var_declaration'''
+#     p[0] = ('declaration_sections', p[1:])
+
 def p_declaration_sections(p):
-    '''declaration_sections : uses_opt constant_declaration type_declaration var_declaration
-                            | uses_opt constant_declaration type_declaration
-                            | uses_opt constant_declaration var_declaration
-                            | uses_opt constant_declaration
-                            | uses_opt type_declaration var_declaration
-                            | uses_opt type_declaration
-                            | uses_opt var_declaration
-                            | uses_opt
-                            | constant_declaration type_declaration var_declaration
-                            | constant_declaration type_declaration
-                            | constant_declaration var_declaration
-                            | constant_declaration
-                            | type_declaration var_declaration
-                            | type_declaration
-                            | var_declaration'''
-    p[0] = ('declaration_sections', p[1:])
+    '''declaration_sections : declaration_sections declaration_section
+                            | empty'''
+    if len(p) == 2:
+        p[0] = []
+    else:
+        p[0] = p[1] + [p[2]]
+
+def p_declaration_section(p):
+    '''declaration_section : uses_opt
+                           | constant_declaration
+                           | type_declaration
+                           | var_declaration
+                           | procedure_declaration
+                           | function_declaration'''
+    p[0] = p[1]
 
 def p_uses_opt(p):
     '''uses_opt : USES ID SEMICOLON
@@ -62,25 +79,32 @@ def p_declaration(p):
 
 # El bloque se compone de declaraciones (variables y/o procedimientos) seguidas de una sentencia compuesta.
 def p_block(p):
-    'block : declarations compound_statement'
+    'block : declaration_sections compound_statement'
     p[0] = ('block', p[1], p[2])
 
-# La sección de declaraciones se puede dividir en declaraciones de variables y declaraciones de procedimientos.
-def p_declarations_var_proc(p):
-    'declarations : VAR declaration_list procedure_declarations'
-    p[0] = ('declarations', p[2], p[3])
+# # La sección de declaraciones se puede dividir en declaraciones de variables y declaraciones de procedimientos.
+# def p_declarations_var_proc(p):
+#     'declarations : VAR declaration_list procedure_declarations'
+#     p[0] = ('declarations', p[2], p[3])
 
-def p_declarations_var_only(p):
-    'declarations : VAR declaration_list'
-    p[0] = ('declarations', p[2], [])
+# def p_declarations_var_only(p):
+#     'declarations : VAR declaration_list'
+#     p[0] = ('declarations', p[2], [])
     
-def p_declarations_proc_only(p):
-    'declarations : procedure_declarations'
-    p[0] = ('declarations', [], p[1])
+# def p_declarations_proc_only(p):
+#     'declarations : procedure_declarations'
+#     p[0] = ('declarations', [], p[1])
     
-def p_declarations_empty(p):
-    'declarations : empty'
-    p[0] = ('declarations', [], [])
+# def p_declarations_empty(p):
+#     'declarations : empty'
+#     p[0] = ('declarations', [], [])
+
+
+# def p_declarations_var_decl_list(p):
+#     'declarations : declaration_list'
+#     p[0] = ('declarations', p[1], [])
+
+
 
 # id_list: uno o más identificadores separados por comas.
 def p_id_list_single(p):
@@ -152,9 +176,9 @@ def p_function_declaration(p):
     'function_declaration : FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON block SEMICOLON'
     p[0] = ('function', p[2], p[4], p[7], p[9])
 
-def p_declarations_func_only(p):
-    'declarations : function_declaration'
-    p[0] = ('declarations', [], [p[1]])
+# def p_declarations_func_only(p):
+#     'declarations : function_declaration'
+#     p[0] = ('declarations', [], [p[1]])
 
 def p_function_call(p):
     'function_call : ID LPAREN expression_list RPAREN'
@@ -346,6 +370,8 @@ def p_factor_number(p):
 def p_factor_string(p):
     'factor : STRING_LITERAL'
     p[0] = ('string', p[1])
+
+
     
 # relop: operadores relacionales.
 def p_relop(p):
@@ -367,8 +393,8 @@ def p_statement_readln(p):
     p[0] = ('readln',)
 
 def p_statement_readln_parent(p):
-    '''statement : READLN LPAREN ID RPAREN
-                 | READLN LBRACKET ID RBRACKET'''
+    '''statement : READLN LPAREN variable RPAREN
+                 | READLN LBRACKET variable RBRACKET'''
     p[0] = ('readln', p[3])
 
 def p_statement_writeln(p):
