@@ -7,6 +7,12 @@ import sys
 VERBOSE = True # Cambia a False para menos información en la salida
 hay_error = False  # Variable global para saber si hubo errores
 
+# Precedencia para resolver conflictos shift/reduce en if-then-else
+precedence = (
+    ('nonassoc', 'ELSE'),  # ELSE tiene menor precedencia
+)
+
+
 # Reglas de la gramática
 def p_program(p):
     'program : PROGRAM ID SEMICOLON declaration_sections block DOT'
@@ -76,20 +82,6 @@ def p_declarations_empty(p):
     'declarations : empty'
     p[0] = ('declarations', [], [])
 
-# Una lista de declaraciones de variables.
-def p_declaration_list(p):
-    '''declaration_list : declaration
-                        | declaration_list declaration'''
-    if len(p) == 2:
-        p[0] = [p[1]]
-    else:
-        p[0] = p[1] + [p[2]]
-
-# Una declaración de variable es: lista de identificadores, dos puntos, tipo, y punto y coma.
-def p_declaration(p):
-    'declaration : id_list COLON type_specifier SEMICOLON'
-    p[0] = ('decl', p[1], p[3])
-
 # id_list: uno o más identificadores separados por comas.
 def p_id_list_single(p):
     'id_list : ID'
@@ -118,6 +110,8 @@ def p_type_definition(p):
 def p_type_specifier(p):
     '''type_specifier : ARRAY LBRACKET expression DOTDOT expression RBRACKET OF type_specifier
                       | INTEGER
+                      | BYTE
+                      | CHAR
                       | ID'''
     if len(p) == 2:
         p[0] = p[1]
@@ -150,7 +144,8 @@ def p_procedure_declarations(p):
 # En esta gramática simplificada, un procedimiento tiene: 
 # PROCEDURE id (lista de parámetros) ; block ;
 def p_procedure_declaration(p):
-    'procedure_declaration : PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON block SEMICOLON'
+    '''procedure_declaration : PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON block SEMICOLON
+                             | PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON block DOT'''
     p[0] = ('procedure', p[2], p[4], p[7])
 
 def p_function_declaration(p):
@@ -171,13 +166,25 @@ def p_factor_function_call(p):
     
 # Lista de parámetros: en este ejemplo se permite únicamente una declaración de parámetros.
 def p_parameter_list(p):
-    'parameter_list : id_list COLON type_specifier'
-    p[0] = ('params', p[1], p[3])
+    '''parameter_list : parameter
+                      | parameter_list SEMICOLON parameter'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
+
+def p_parameter(p):
+    '''parameter : id_list COLON type_specifier
+                 | VAR id_list COLON type_specifier'''
+    if len(p) == 4:
+        p[0] = ('param', p[1], p[3])  # Parámetro normal
+    else:
+        p[0] = ('param_by_ref', p[2], p[4])  # Parámetro por referencia
 
 # El bloque compuesto se encierra entre BEGIN y END.
 def p_compound_statement(p):
     'compound_statement : BEGIN statement_list END'
-    p[0] = ('compound', p[2])
+    p[0] = ('compound_statement', p[2])
     
 # Una lista de sentencias: una o varias separadas por punto y coma.
 def p_statement_list_multi(p):
@@ -193,38 +200,31 @@ def p_statement_list_tail(p):
         p[0] = [p[2]] + p[3]
 
 # Sentencia: puede ser asignación, condicional, ciclo, llamada a procedimiento o bloque compuesto.
-def p_statement_assignment(p):
-    'statement : assignment_statement'
+def p_statement(p):
+    '''statement : if_statement
+                 | assignment_statement
+                 | while_statement
+                 | procedure_call
+                 | compound_statement
+                 | for_statement
+                 | empty'''
     p[0] = p[1]
 
-def p_statement_if(p):
-    'statement : if_statement'
-    p[0] = p[1]
+def p_if_statement(p):
+    '''if_statement : IF expression THEN statement ELSE statement
+                 | IF expression THEN statement'''
+    if len(p) == 5:  # IF <condición> THEN <sentencia>
+        p[0] = ('if', p[2], p[4], None)
+    else:  # IF <condición> THEN <sentencia> ELSE <sentencia>
+        p[0] = ('if', p[2], p[4], p[6])
 
-# def p_sentencia_for(p):
-#     '''sentencia : FOR ID ASSIGN expresion TO expresion DO sentencia'''
-#     p[0] = ('for', p[2], p[4], p[6], p[8])
-
-def p_statement_for(p):
-    'statement : FOR ID COLON_EQUAL expression TO expression DO statement'
-    p[0] = ('for', p[2], p[4], p[6], p[8])
-
-
-def p_statement_while(p):
-    'statement : while_statement'
-    p[0] = p[1]
-
-def p_statement_proc_call(p):
-    'statement : procedure_call'
-    p[0] = p[1]
-
-def p_statement_compound(p):
-    'statement : compound_statement'
-    p[0] = p[1]
-
-def p_statement_empty(p):
-    'statement : empty'
-    p[0] = None
+def p_for_statement(p):
+    '''for_statement : FOR ID COLON_EQUAL expression TO expression DO statement
+                     | FOR ID COLON_EQUAL expression DOWNTO expression DO statement'''
+    if p[4] == 'to':
+        p[0] = ('for', 'to', p[2], p[4], p[6], p[8])
+    else:
+        p[0] = ('for', 'downto', p[2], p[4], p[6], p[8])
 
 # Asignación: variable, token de asignación, y expresión. EJEMPLO: x := 5 + 3.
 def p_assignment_statement(p):
@@ -239,12 +239,7 @@ def p_variable_simple(p):
 def p_variable_index(p):
     'variable : ID LBRACKET expression RBRACKET'
     p[0] = ('arrayref', p[1], p[3])
-    
-# Sentencia if: IF expresión THEN sentencia ELSE sentencia.
-def p_if_statement(p):
-    'if_statement : IF expression THEN statement ELSE statement'
-    p[0] = ('if', p[2], p[4], p[6])
-    
+        
 # Sentencia while: WHILE expresión DO sentencia.
 def p_while_statement(p):
     'while_statement : WHILE expression DO statement'
@@ -325,8 +320,6 @@ def p_mulop(p):
              
     p[0] = p[1]
 
-
-
 def p_expression_binop(p):
     '''expression : expression PLUS expression
                   | expression MINUS expression
@@ -374,7 +367,8 @@ def p_statement_readln(p):
     p[0] = ('readln',)
 
 def p_statement_readln_parent(p):
-    'statement : READLN LPAREN ID RPAREN'
+    '''statement : READLN LPAREN ID RPAREN
+                 | READLN LBRACKET ID RBRACKET'''
     p[0] = ('readln', p[3])
 
 def p_statement_writeln(p):
@@ -404,8 +398,20 @@ def p_constant_list(p):
         p[0] = p[1] + [p[2]]
 
 def p_constant(p):
-    'constant : ID EQUAL NUMBER SEMICOLON'
+    '''constant : ID EQUAL CHARACTER_LITERAL SEMICOLON
+                | ID EQUAL NUMBER SEMICOLON
+                | ID EQUAL STRING_LITERAL SEMICOLON'''
     p[0] = ('const', p[1], p[3])
+
+# Expresión lógica
+def p_expression_logical(p):
+    '''expression : expression AND expression
+                  | expression OR expression
+                  | NOT expression'''
+    if len(p) == 3:  # NOT expression
+        p[0] = ('not', p[2])
+    else:  # expression AND/OR expression
+        p[0] = ('logical_op', p[2], p[1], p[3])
 
 # Manejo de errores sintácticos
 def p_error(p):

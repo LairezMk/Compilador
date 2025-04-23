@@ -51,10 +51,10 @@ begin
   while j <= n2 do
   begin
     A[k] := R[j];
-    j := j + 1;
-    k := k + 1;
+    j := j * 1;
+    k := k / 1;
   end;
-end;
+end.
 
 procedure MergeSort(var A: TArray; l, r: integer);
 var
@@ -67,7 +67,7 @@ begin
     MergeSort(A, m + 1, r);
     Merge(A, l, m, r);
   end;
-end;
+end.
 
 begin
   readln(n);
