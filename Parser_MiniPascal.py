@@ -54,8 +54,8 @@ def p_declaration_section(p):
     p[0] = p[1]
 
 def p_uses_opt(p):
-    '''uses_opt : USES id_list SEMICOLON
-                | empty'''
+    '''uses_opt : USES id_list SEMICOLON'''
+   #             | empty'''
     if len(p) == 2:
         p[0] = None
     else:
@@ -135,26 +135,81 @@ def p_type_list(p):
     else:
         p[0] = p[1] + [p[2]]
 
-def p_type_specifier_enum(p):
-    '''type_specifier : LPAREN id_list RPAREN'''
-    p[0] = ('enum', p[2])
+#def p_type_specifier_enum(p):
+#    '''type_specifier : LPAREN id_list RPAREN'''
+#    p[0] = ('enum', p[2])
 
 def p_type_definition(p):
     'type_definition : ID EQUAL type_specifier SEMICOLON'
     p[0] = ('type', p[1], p[3])
 
 def p_type_specifier(p):
-    '''type_specifier : ARRAY LBRACKET expression DOTDOT expression RBRACKET OF type_specifier
+    '''type_specifier : ARRAY LBRACKET type_expression RBRACKET OF type_specifier
+                      | subrange
+                      | FILE OF type_specifier
+                      | SET OF type_specifier
+                      | RECORD field_list case_part END
+                      | OBJECT field_list method_list END                              
+                      | LPAREN id_list RPAREN
+                      | BOOLEAN_LITERAL
                       | INTEGER
                       | BYTE
                       | CHAR
-                      | ID
-                      | BOOLEAN_LITERAL'''
-    if len(p) == 2:
-        p[0] = p[1]
-    else:
-        p[0] = ('array', p[3], p[5], p[8])
+                      | STRING LBRACKET NUMBER RBRACKET
+                      | ID'''
+    pass
 
+def p_type_expression(p):
+    '''type_expression : type_expression COMMA subrange
+                       | subrange'''
+    pass
+
+def p_subrange(p):
+    'subrange : NUMBER DOTDOT NUMBER'
+    pass
+
+#RECORD -----------------------------------------------
+def p_field_list(p):
+    '''field_list : field_list field
+                  | field'''
+    pass
+
+def p_field(p):
+    '''field : id_list COLON type_specifier SEMICOLON
+             | id_list COLON type_specifier'''
+    pass
+
+def p_case_part(p):
+    '''case_part : CASE ID COLON type_specifier OF case_list SEMICOLON
+                 | empty'''
+    pass
+
+def p_case_list(p):
+    '''case_list : case_list SEMICOLON case_element
+                 | case_element'''
+    pass
+
+def p_case_element(p):
+    'case_element : NUMBER COLON LPAREN field_list RPAREN'
+    pass
+#---------------------------------------------------
+
+# OBJECT -----------------------------------------------
+
+def p_method_list(p):
+    '''method_list : method_list method
+                   | method
+                   | empty'''
+    pass
+
+def p_method(p):
+    '''method : CONSTRUCTOR ID LPAREN field_list RPAREN SEMICOLON
+              | PROCEDURE ID LPAREN field_list RPAREN SEMICOLON
+              | FUNCTION ID LPAREN field_list RPAREN COLON type_specifier SEMICOLON
+              | DESTRUCTOR ID SEMICOLON'''
+    pass
+
+# ----------------------------------------------------
 
 # def p_type_specifier_char(p):
 #     'type_specifier : CHAR'

@@ -13,14 +13,14 @@ CONST
 TYPE
   TDia = (Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo); { Corregido: agregado punto y coma }
   TRango = 1..100;
-  TMatriz = ARRAY[1..10, 1..10] OF INTEGER; { Corregido: agregado OF }
+  TMatriz = ARRAY[1..10, 1..100] OF INTEGER; { Corregido: agregado OF }
   TVector = ARRAY[1..50] OF REAL;
   TArchivo = FILE OF INTEGER; { Corregido: agregado OF }
   TConjunto = SET OF CHAR;
   
   TRegistro = RECORD
-    id: INTEGER;
-    nombre: STRING[50];
+    ID: INTEGER;
+    Nombre: STRING[50];
     activo: BOOLEAN;
     CASE tipo: BYTE OF { Corregido: agregado OF }
       1: (valor_entero: INTEGER);

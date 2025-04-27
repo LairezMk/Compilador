@@ -52,7 +52,10 @@ tokens = (
     'CHAR', #Para los caracteres
     'USES', #Para los usos
     'INTEGER', #Para los enteros
-    
+    'SUBRANGE', #Para los rangos
+    'OBJECT', #Para los objetos
+    'CONSTRUCTOR', #Para los constructores
+    'DESTRUCTOR', #Para los destructores
 
     #Symbols
     'PLUS',    # Suma "+"
@@ -137,7 +140,10 @@ reserved = {
     'input': 'INPUT',
     'output': 'OUTPUT',
     'longint': 'LONGINT',
-
+    'subrange': 'SUBRANGE',
+    'object': 'OBJECT',
+    'constructor': 'CONSTRUCTOR',
+    'destructor': 'DESTRUCTOR',
 }
 
 # Regular expression rules for simple tokens
@@ -194,6 +200,14 @@ def t_CHAR(t):
 
 def t_CONST(t):
     r'\bconst\b'
+    return t
+
+def t_CONSTRUCTOR(t):
+    r'\bconstructor\b'
+    return t
+
+def t_DESTRUCTOR(t):
+    r'\bdestructor\b'
     return t
 
 def t_DIV(t):
