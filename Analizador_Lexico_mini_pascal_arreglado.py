@@ -145,6 +145,7 @@ reserved = {
     'object': 'OBJECT',
     'constructor': 'CONSTRUCTOR',
     'destructor': 'DESTRUCTOR',
+    'forward': 'FORWARD',
 }
 
 # Regular expression rules for simple tokens
@@ -357,6 +358,10 @@ def t_READ(t):
 
 def t_PROCEDURE(t):
     r'\bprocedure\b'
+    return t
+
+def t_FORWARD(t):
+    r'\bforward\b'
     return t
 
 def t_XOR(t):

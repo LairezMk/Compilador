@@ -109,6 +109,7 @@ def p_type_specifier(p):
                       | INTEGER
                       | BYTE
                       | CHAR
+                      | STRING
                       | STRING LBRACKET NUMBER RBRACKET
                       | ID'''
     pass
@@ -130,8 +131,10 @@ def p_field_list(p):
     pass
 
 def p_field(p):
-    '''field : id_list COLON type_specifier SEMICOLON
-             | id_list COLON type_specifier'''
+    '''field : id_list COLON type_specifier
+             | id_list COLON type_specifier SEMICOLON
+             | VAR id_list COLON type_specifier
+             | VAR id_list COLON type_specifier SEMICOLON'''
     pass
 
 def p_case_part(p):
@@ -166,13 +169,6 @@ def p_method(p):
 
 # ----------------------------------------------------
 
-# def p_type_specifier_char(p):
-#     'type_specifier : CHAR'
-#     p[0] = 'char'
-
-# def p_type_specifier_byte(p):
-#     'type_specifier : BYTE'
-#     p[0] = 'byte'
 
 def p_type_specifier_longint(p):
     'type_specifier : LONGINT'
@@ -232,7 +228,8 @@ def p_parameter(p):
 
 # El bloque compuesto se encierra entre BEGIN y END.
 def p_compound_statement(p):
-    'compound_statement : BEGIN statement_list END'
+    '''compound_statement : BEGIN statement_list END
+                         | BEGIN statement_list END SEMICOLON'''
     pass
     
 # Una lista de sentencias: una o varias separadas por punto y coma.
