@@ -56,6 +56,7 @@ tokens = (
     'OBJECT', #Para los objetos
     'CONSTRUCTOR', #Para los constructores
     'DESTRUCTOR', #Para los destructores
+    'FORWARD', #Para los avances
 
     #Symbols
     'PLUS',    # Suma "+"
