@@ -111,7 +111,7 @@ BEGIN
       encontrado := TRUE
     ELSE
       i := i + 1;
-  END; { Corregido: agregado punto y coma }
+  END;; { Corregido: agregado punto y coma }
   
   IF encontrado THEN
     BuscarElemento := i
@@ -132,18 +132,6 @@ BEGIN
         arr[j] := arr[j+1];
         arr[j+1] := temp;
       END;
-END;
-
-PROCEDURE ManejarCasos(opcion: INTEGER);
-BEGIN
-  CASE opcion OF
-    1: ImprimirMensaje('Opción 1 seleccionada');
-    2: ImprimirMensaje('Opción 2 seleccionada');
-    3, 4: ImprimirMensaje('Opción 3 o 4 seleccionada');
-    5..10: ImprimirMensaje('Opción entre 5 y 10 seleccionada');
-  ELSE { Corregido: cambiado ELSEE por ELSE }
-    ImprimirMensaje('Opción no válida');
-  END;
 END;
 
 PROCEDURE EjemploWith;

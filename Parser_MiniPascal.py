@@ -18,23 +18,7 @@ def p_program(p):
     'program : PROGRAM ID SEMICOLON declaration_sections block DOT'
     pass
 
-# def p_declaration_sections(p):
-#     '''declaration_sections : uses_opt constant_declaration type_declaration var_declaration
-#                             | uses_opt constant_declaration type_declaration
-#                             | uses_opt constant_declaration var_declaration
-#                             | uses_opt constant_declaration
-#                             | uses_opt type_declaration var_declaration
-#                             | uses_opt type_declaration
-#                             | uses_opt var_declaration
-#                             | uses_opt
-#                             | constant_declaration type_declaration var_declaration
-#                             | constant_declaration type_declaration
-#                             | constant_declaration var_declaration
-#                             | constant_declaration
-#                             | type_declaration var_declaration
-#                             | type_declaration
-#                             | var_declaration'''
-#     p[0] = ('declaration_sections', p[1:])
+
 
 def p_declaration_sections(p):
     '''declaration_sections : declaration_sections declaration_section
@@ -134,7 +118,8 @@ def p_field(p):
     '''field : id_list COLON type_specifier
              | id_list COLON type_specifier SEMICOLON
              | VAR id_list COLON type_specifier
-             | VAR id_list COLON type_specifier SEMICOLON'''
+             | VAR id_list COLON type_specifier SEMICOLON
+             | id_list LPAREN STRING_LITERAL RPAREN'''
     pass
 
 def p_case_part(p):
@@ -148,7 +133,8 @@ def p_case_list(p):
     pass
 
 def p_case_element(p):
-    'case_element : NUMBER COLON LPAREN field_list RPAREN'
+    '''case_element : NUMBER COLON LPAREN field_list RPAREN
+                    | NUMBER COLON field_list'''
     pass
 #---------------------------------------------------
 
@@ -169,6 +155,10 @@ def p_method(p):
 
 # ----------------------------------------------------
 
+def p_case_statement(p):
+    '''case_statement : CASE expression OF case_list END SEMICOLON
+                      | CASE expression OF case_list END'''
+    pass
 
 def p_type_specifier_longint(p):
     'type_specifier : LONGINT'
@@ -184,7 +174,7 @@ def p_procedure_declarations(p):
 # En esta gramática simplificada, un procedimiento tiene: 
 # PROCEDURE id (lista de parámetros) ; block ;
 def p_procedure_declaration(p):
-    '''procedure_declaration : PROCEDURE ID LPAREN field_list RPAREN SEMICOLON
+    '''procedure_declaration : PROCEDURE ID LPAREN field_list RPAREN SEMICOLON block 
                              | PROCEDURE ID LPAREN RPAREN SEMICOLON block SEMICOLON
                              | PROCEDURE ID SEMICOLON block SEMICOLON
                              | PROCEDURE ID LPAREN field_list RPAREN SEMICOLON FORWARD SEMICOLON
@@ -197,13 +187,11 @@ def p_procedure_declaration(p):
 #     p[0] = ('function', p[2], p[4], p[7], p[9])
 
 def p_function_declaration(p):
-    '''function_declaration : FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON block SEMICOLON
+    '''function_declaration : FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON block
                             | FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON FORWARD SEMICOLON'''
     pass
 
-# def p_declarations_func_only(p):
-#     'declarations : function_declaration'
-#     p[0] = ('declarations', [], [p[1]])
+
 
 def p_function_call(p):
     'function_call : ID LPAREN expression_list RPAREN'
@@ -228,8 +216,8 @@ def p_parameter(p):
 
 # El bloque compuesto se encierra entre BEGIN y END.
 def p_compound_statement(p):
-    '''compound_statement : BEGIN statement_list END
-                         | BEGIN statement_list END SEMICOLON'''
+    '''compound_statement : BEGIN statement_list END SEMICOLON
+                         | BEGIN statement_list END'''
     pass
     
 # Una lista de sentencias: una o varias separadas por punto y coma.
@@ -238,7 +226,7 @@ def p_statement_list_multi(p):
     pass
 
 def p_statement_list_tail(p):
-    '''statement_list_tail : SEMICOLON statement statement_list_tail
+    '''statement_list_tail : SEMICOLON statement statement_list_tail 
                            | empty'''
     pass
 
@@ -250,6 +238,7 @@ def p_statement(p):
                  | procedure_call
                  | compound_statement
                  | for_statement
+                 | case_statement
                  | empty'''
     pass
 
@@ -265,7 +254,8 @@ def p_for_statement(p):
 
 # Asignación: variable, token de asignación, y expresión. EJEMPLO: x := 5 + 3.
 def p_assignment_statement(p):
-    'assignment_statement : variable COLON_EQUAL expression'
+    '''assignment_statement : variable COLON_EQUAL expression
+                            | variable COLON_EQUAL BOOLEAN_LITERAL'''
     pass
 
 # Una variable es un identificador, con o sin índice (para arreglos).
@@ -434,6 +424,8 @@ def p_expression_logical(p):
                   | expression OR expression
                   | NOT expression'''
     pass
+
+
 
 # Manejo de errores sintácticos
 def p_error(p):
