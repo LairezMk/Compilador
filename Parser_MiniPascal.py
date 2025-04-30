@@ -31,7 +31,21 @@ def p_declaration_section(p):
                            | type_declaration
                            | var_declaration
                            | procedure_declarations
-                           | function_declaration'''
+                           | function_declaration
+                           | constructor_declaration
+                           | method_declaration'''
+    pass
+
+def p_method_declaration(p):
+    '''method_declaration : CONSTRUCTOR ID DOT ID LPAREN parameter_list RPAREN SEMICOLON block 
+                          | PROCEDURE ID DOT ID LPAREN parameter_list RPAREN SEMICOLON block 
+                          | FUNCTION ID DOT ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON block
+                          | DESTRUCTOR ID DOT ID SEMICOLON block'''
+    pass
+
+def p_constructor_declaration(p):
+    '''constructor_declaration : CONSTRUCTOR ID LPAREN field_list RPAREN SEMICOLON block
+                               | CONSTRUCTOR ID LPAREN RPAREN SEMICOLON block'''
     pass
 
 def p_uses_opt(p):
@@ -104,7 +118,9 @@ def p_type_expression(p):
     pass
 
 def p_subrange(p):
-    'subrange : NUMBER DOTDOT NUMBER'
+    '''subrange : NUMBER DOTDOT NUMBER
+                | NUMBER DOTDOT ID'''
+
     pass
 
 #RECORD -----------------------------------------------
@@ -119,7 +135,8 @@ def p_field(p):
              | id_list COLON type_specifier SEMICOLON
              | VAR id_list COLON type_specifier
              | VAR id_list COLON type_specifier SEMICOLON
-             | id_list LPAREN STRING_LITERAL RPAREN'''
+             | id_list LPAREN STRING_LITERAL RPAREN
+             | id_list assignment_statement'''
     pass
 
 def p_case_part(p):
@@ -148,7 +165,7 @@ def p_method_list(p):
 
 def p_method(p):
     '''method : CONSTRUCTOR ID LPAREN field_list RPAREN SEMICOLON
-              | PROCEDURE ID LPAREN field_list RPAREN SEMICOLON
+              | PROCEDURE ID LPAREN field_list RPAREN SEMICOLON  
               | FUNCTION ID LPAREN field_list RPAREN COLON type_specifier SEMICOLON
               | DESTRUCTOR ID SEMICOLON'''
     pass
@@ -174,7 +191,7 @@ def p_procedure_declarations(p):
 # En esta gramática simplificada, un procedimiento tiene: 
 # PROCEDURE id (lista de parámetros) ; block ;
 def p_procedure_declaration(p):
-    '''procedure_declaration : PROCEDURE ID LPAREN field_list RPAREN SEMICOLON block 
+    '''procedure_declaration : PROCEDURE ID LPAREN field_list RPAREN SEMICOLON block SEMICOLON
                              | PROCEDURE ID LPAREN RPAREN SEMICOLON block SEMICOLON
                              | PROCEDURE ID SEMICOLON block SEMICOLON
                              | PROCEDURE ID LPAREN field_list RPAREN SEMICOLON FORWARD SEMICOLON
@@ -187,7 +204,7 @@ def p_procedure_declaration(p):
 #     p[0] = ('function', p[2], p[4], p[7], p[9])
 
 def p_function_declaration(p):
-    '''function_declaration : FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON block
+    '''function_declaration : FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON block SEMICOLON
                             | FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON FORWARD SEMICOLON'''
     pass
 
@@ -216,10 +233,9 @@ def p_parameter(p):
 
 # El bloque compuesto se encierra entre BEGIN y END.
 def p_compound_statement(p):
-    '''compound_statement : BEGIN statement_list END SEMICOLON
-                         | BEGIN statement_list END'''
+    '''compound_statement : BEGIN statement_list END'''
     pass
-    
+
 # Una lista de sentencias: una o varias separadas por punto y coma.
 def p_statement_list_multi(p):
     'statement_list : statement statement_list_tail'
@@ -239,13 +255,21 @@ def p_statement(p):
                  | compound_statement
                  | for_statement
                  | case_statement
+                 | with_statement
                  | empty'''
+    pass
+
+def p_with_statement(p):
+    '''with_statement : WITH variable DO statement'''
     pass
 
 def p_if_statement(p):
     '''if_statement : IF expression THEN statement ELSE statement
-                 | IF expression THEN statement'''
+                    | IF expression THEN statement
+                    | IF expression IN statement THEN statement ELSE statement
+                    | IF expression IN statement THEN statement'''
     pass
+
 
 def p_for_statement(p):
     '''for_statement : FOR ID COLON_EQUAL expression TO expression DO statement
@@ -255,12 +279,15 @@ def p_for_statement(p):
 # Asignación: variable, token de asignación, y expresión. EJEMPLO: x := 5 + 3.
 def p_assignment_statement(p):
     '''assignment_statement : variable COLON_EQUAL expression
-                            | variable COLON_EQUAL BOOLEAN_LITERAL'''
+                            | variable COLON_EQUAL BOOLEAN_LITERAL
+                            | ID COLON_EQUAL expression'''
     pass
 
 # Una variable es un identificador, con o sin índice (para arreglos).
 def p_variable_simple(p):
-    'variable : ID'
+    '''variable : ID
+                | variable LBRACKET expression RBRACKET
+                | variable DOT ID'''  
     pass
     
 def p_variable_index(p):
@@ -342,8 +369,6 @@ def p_expression_binop(p):
                   | expression DIVIDE expression
                   | expression MOD expression'''
     pass
-
-
     
 # factor: puede ser una expresión entre paréntesis, una variable, un número o una cadena.
 def p_factor_expr(p):
@@ -388,12 +413,23 @@ def p_statement_readln_parent(p):
                  | READLN LBRACKET variable RBRACKET'''
     pass
 
-def p_statement_writeln(p):
-    'statement : WRITELN LPAREN expression_list RPAREN'
-    pass
-
 def p_statement_write(p):
     'statement : WRITE LPAREN expression_list RPAREN'
+    pass
+
+def p_statement_writeln(p):
+    '''statement : WRITELN LPAREN write_arguments RPAREN'''
+    pass
+
+def p_write_arguments(p):
+    '''write_arguments : write_argument
+                       | write_arguments COMMA write_argument'''
+    pass
+
+def p_write_argument(p):
+    '''write_argument : expression
+                      | expression COLON expression
+                      | expression COLON expression COLON expression'''
     pass
 
 #Definición para USES 
