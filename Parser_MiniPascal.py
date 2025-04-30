@@ -176,7 +176,7 @@ def p_method(p):
 
 def p_case_statement(p):
     '''case_statement : CASE expression OF case_list END SEMICOLON
-                      | CASE expression OF case_list ELSE statement END SEMICOLON  
+                      | CASE expression OF case_list ELSE statement_list END SEMICOLON  
                       | CASE expression OF case_list END'''
     pass
 
@@ -241,13 +241,14 @@ def p_compound_statement(p):
 
 # Una lista de sentencias: una o varias separadas por punto y coma.
 def p_statement_list_multi(p):
-    'statement_list : statement statement_list_tail'
+    '''statement_list : statement SEMICOLON
+                      | statement_list statement SEMICOLON'''
     pass
 
-def p_statement_list_tail(p):
-    '''statement_list_tail : SEMICOLON statement statement_list_tail 
-                           | empty'''
-    pass
+# def p_statement_list_tail(p):
+#     '''statement_list_tail : SEMICOLON statement_list_tail 
+#                            | empty'''
+#     pass
 
 # Sentencia: puede ser asignación, condicional, ciclo, llamada a procedimiento o bloque compuesto.
 def p_statement(p):
@@ -275,14 +276,18 @@ def p_if_statement(p):
 
 
 def p_for_statement(p):
-    '''for_statement : FOR ID COLON_EQUAL expression TO expression DO statement
-                     | FOR ID COLON_EQUAL expression DOWNTO expression DO statement'''
+    '''for_statement : FOR ID COLON_EQUAL expression TO expression DO block
+                     | FOR ID COLON_EQUAL expression DOWNTO expression DO block'''
     pass
 
 # Asignación: variable, token de asignación, y expresión. EJEMPLO: x := 5 + 3.
 def p_assignment_statement(p):
     '''assignment_statement : variable COLON_EQUAL expression
-                            | variable COLON_EQUAL BOOLEAN_LITERAL
+                            | variable COLON_EQUAL BOOLEAN_LITERAL SEMICOLON
+                            | variable PLUS COLON_EQUAL expression
+                            | variable MINUS COLON_EQUAL expression
+                            | variable TIMES COLON_EQUAL expression
+                            | variable DIVIDE COLON_EQUAL expression
                             | ID COLON_EQUAL expression'''
     pass
 
@@ -422,6 +427,7 @@ def p_statement_write(p):
 
 def p_statement_writeln(p):
     '''statement : WRITELN LPAREN write_arguments RPAREN'''
+                # | WRITELN LPAREN write_arguments RPAREN SEMICOLON'''
     pass
 
 def p_write_arguments(p):
@@ -496,7 +502,7 @@ if __name__ == '__main__':
     else:
         fin = 'Evaluar_Pascal.txt'
 
-    with open( fin, 'r') as f:
+    with open(fin, 'r', encoding='utf-8') as f:
         data = f.read()
 
     parser.parse(data, tracking=True, lexer=lexer)
