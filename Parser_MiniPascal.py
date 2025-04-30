@@ -136,7 +136,9 @@ def p_field(p):
              | VAR id_list COLON type_specifier
              | VAR id_list COLON type_specifier SEMICOLON
              | id_list LPAREN STRING_LITERAL RPAREN
-             | id_list assignment_statement'''
+             | if_statement
+             | case_statement
+             | assignment_statement'''
     pass
 
 def p_case_part(p):
@@ -174,6 +176,7 @@ def p_method(p):
 
 def p_case_statement(p):
     '''case_statement : CASE expression OF case_list END SEMICOLON
+                      | CASE expression OF case_list ELSE statement END SEMICOLON  
                       | CASE expression OF case_list END'''
     pass
 

@@ -20,7 +20,7 @@ begin
        begin
          writeln('Error: División por cero');
          Operar := 0;
-       end;
+       end
   else
     writeln('Opción inválida');
     Operar := 0;
