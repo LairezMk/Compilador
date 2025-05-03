@@ -6,6 +6,7 @@ import sys
 
 VERBOSE = True # Cambia a False para menos información en la salida
 hay_error = False  # Variable global para saber si hubo errores
+symbol_table = {}
 
 # Precedencia para resolver conflictos shift/reduce en if-then-else
 precedence = (
@@ -16,14 +17,16 @@ precedence = (
 # Reglas de la gramática
 def p_program(p):
     'program : PROGRAM ID SEMICOLON declaration_sections block DOT'
-    pass
-
-
+    p[0] = ('program', p[2], p[4], p[6])  # Guardar el nombre del programa y la tabla de símbolos
+    global symbol_table
+    symbol_table[p[2]] = ('program')  # Guardar el nombre del programa en la tabla de símbolos
 
 def p_declaration_sections(p):
     '''declaration_sections : declaration_sections declaration_section
                             | empty'''
     pass
+    #p[0] = p[1]  # Guardar la sección de declaraciones en la tabla de símbolos
+
 
 def p_declaration_section(p):
     '''declaration_section : uses_opt
@@ -41,22 +44,39 @@ def p_method_declaration(p):
                           | PROCEDURE ID DOT ID LPAREN parameter_list RPAREN SEMICOLON block 
                           | FUNCTION ID DOT ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON block
                           | DESTRUCTOR ID DOT ID SEMICOLON block'''
-    pass
+    p[0] = ('method', p[2], p[4], p[6], p[8])  # Guardar el nombre del método y la tabla de símbolos
+    global symbol_table
+    symbol_table[p[2]] = ('method', p[4])  # Guardar el nombre del método en la tabla de símbolos
+
 
 def p_constructor_declaration(p):
     '''constructor_declaration : CONSTRUCTOR ID LPAREN field_list RPAREN SEMICOLON block
                                | CONSTRUCTOR ID LPAREN RPAREN SEMICOLON block'''
-    pass
+    p[0] = ('constructor', p[2], p[4], p[6])  # Guardar el nombre del constructor y la tabla de símbolos
+    global symbol_table
+    symbol_table[p[2]] = ('constructor')  # Guardar el nombre del constructor en la tabla de símbolos
 
 def p_uses_opt(p):
     '''uses_opt : USES id_list SEMICOLON'''
    #             | empty'''
-    pass
+    p[0] = p[2]  # Guardar la lista de identificadores en la tabla de símbolos
+    global symbol_table
+    for id in p[2]:
+        if id not in symbol_table:
+            lineno = p.lineno(1)
+            print(f"Error semántico en la linea {lineno}: El módulo '{id}' no fue declarado.")
+            global hay_error
+            hay_error = True
+        else:
+            symbol_table[id] = ('module')  # Guardar el nombre del módulo en la tabla de símbolos
 
-def p_id_list(p):
-    '''id_list : ID
-               | id_list COMMA ID'''
-    pass     
+def p_id_list_single(p):
+    'id_list : ID'
+    p[0] = [p[1]]
+
+def p_id_list_multiple(p):
+    'id_list : id_list COMMA ID'
+    p[0] = p[1] + [p[3]]    
 
 def p_var_declaration(p):
     'var_declaration : VAR declaration_list'
@@ -69,18 +89,29 @@ def p_declaration_list(p):
 
 def p_declaration(p):
     'declaration : id_list COLON type_specifier SEMICOLON'
-    pass
+    global symbol_table
+    var_names = p[1]
+    var_type = p[3]
+    
+    for name in var_names:
+        if name in symbol_table:
+            lineno = p.lineno(1)
+            print(f"Error semántico en la linea {lineno}: La variable '{name}' ya fue declarada.")
+            global hay_error
+            hay_error = True
+        else:
+            p[0] = ('var', name, var_type)
+            symbol_table[name] = ('var', var_type)
+
 
 # El bloque se compone de declaraciones (variables y/o procedimientos) seguidas de una sentencia compuesta.
 def p_block(p):
     'block : declaration_sections compound_statement'
-    pass
-
-
+    p[0] = ('block', p[1], p[2])  # Guardar la tabla de símbolos y la sentencia compuesta
 
 def p_type_declaration(p):
     'type_declaration : TYPE type_list'
-    pass
+    p[0] = ('type_declaration', p[2])  # Guardar la lista de tipos en la tabla de símbolos
 
 def p_type_list(p):
     '''type_list : type_definition
@@ -110,7 +141,7 @@ def p_type_specifier(p):
                       | STRING
                       | STRING LBRACKET NUMBER RBRACKET
                       | ID'''
-    pass
+    p[0] = p[1]
 
 def p_type_expression(p):
     '''type_expression : type_expression COMMA subrange
@@ -194,13 +225,21 @@ def p_procedure_declarations(p):
 # En esta gramática simplificada, un procedimiento tiene: 
 # PROCEDURE id (lista de parámetros) ; block ;
 def p_procedure_declaration(p):
-    '''procedure_declaration : PROCEDURE ID LPAREN field_list RPAREN SEMICOLON block SEMICOLON
+    '''procedure_declaration : PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON block SEMICOLON
                              | PROCEDURE ID LPAREN RPAREN SEMICOLON block SEMICOLON
                              | PROCEDURE ID SEMICOLON block SEMICOLON
-                             | PROCEDURE ID LPAREN field_list RPAREN SEMICOLON FORWARD SEMICOLON
+                             | PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON FORWARD SEMICOLON
                              | PROCEDURE ID LPAREN RPAREN SEMICOLON FORWARD SEMICOLON
                              | PROCEDURE ID SEMICOLON FORWARD SEMICOLON'''
-    pass
+    proc_name = p[2]
+    symbol_table[proc_name] = ('procedure')
+
+    # Add parameters to symbol table (if any)
+    if len(p) > 5 and p[4]:  # Check if parameter_list exists and is not empty
+        for param in p[4]:
+            param_name = param[1]  # Assuming parameter structure is ('parameter', name, type)
+            param_type = param[2]
+            symbol_table[param_name] = ('parameter', param_type)
 
 # def p_function_declaration(p):
 #     'function_declaration : FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON block SEMICOLON'
@@ -209,9 +248,8 @@ def p_procedure_declaration(p):
 def p_function_declaration(p):
     '''function_declaration : FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON block SEMICOLON
                             | FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON FORWARD SEMICOLON'''
-    pass
-
-
+    func_name = p[2]
+    symbol_table[func_name] = ('function')
 
 def p_function_call(p):
     'function_call : ID LPAREN expression_list RPAREN'
@@ -227,12 +265,16 @@ def p_parameter_list(p):
     '''parameter_list : parameter
                       | parameter_list SEMICOLON parameter
                       | empty'''
-    pass
+    if len(p) == 2 and p[1] != 'empty':
+        p[0] = [p[1]]
+    elif len(p) == 4:
+        p[0] = p[1] + [p[3]]
+    else:
+        p[0] = []
 
 def p_parameter(p):
-    '''parameter : id_list COLON type_specifier
-                 | VAR id_list COLON type_specifier'''
-    pass
+    '''parameter : ID COLON type_specifier'''
+    p[0] = ('parameter', p[1], p[3])  # Store parameter info for use in p_procedure_declaration
 
 # El bloque compuesto se encierra entre BEGIN y END.
 def p_compound_statement(p):
@@ -295,8 +337,19 @@ def p_assignment_statement(p):
 def p_variable_simple(p):
     '''variable : ID
                 | variable LBRACKET expression RBRACKET
-                | variable DOT ID'''  
-    pass
+                | variable DOT ID'''
+    if len(p) == 2:
+        if p[1] not in symbol_table:
+            lineno = p.lineno(1)
+            print(f"Error semántico en la linea {lineno}: Variable '{p[1]}' no declarada.")
+            global hay_error
+            hay_error = True
+        else:
+            p[0] = ('var', p[1])  # Store the variable name
+    elif len(p) == 5:
+        p[0] = ('array_access', p[1], p[3])
+    elif len(p) == 4:
+        p[0] = ('record_access', p[1], p[3])
     
 def p_variable_index(p):
     'variable : ID LBRACKET index_list RBRACKET'
@@ -461,7 +514,18 @@ def p_constant(p):
                 | ID EQUAL NUMBER SEMICOLON
                 | ID EQUAL STRING_LITERAL SEMICOLON
                 | ID EQUAL BOOLEAN_LITERAL SEMICOLON'''
-    pass
+    global symbol_table
+    const_name = p[1]
+    const_value = p[3]
+
+    if const_name in symbol_table:
+        lineno = p.lineno(1)
+        print(f"Error semántico en la linea {lineno}: La constante '{const_name}' ya fue declarada.")
+        global hay_error
+        hay_error = True
+    else:
+        symbol_table[const_name] = ('const', const_value)  # Store constant in symbol table
+        p[0] = ('const', const_name, const_value)
 
 # Expresión lógica
 def p_expression_logical(p):
@@ -508,7 +572,13 @@ if __name__ == '__main__':
     parser.parse(data, tracking=True, lexer=lexer)
 
     if not hay_error:
-        print("Amiguito, tengo el placer de informar que tú parser reconoció correctamente todo")
+        print("Amiguito, tengo el placer de informar que tu parser reconoció correctamente todo.")
+        print("\nTabla de símbolos:")
+        for name, t in symbol_table.items():
+            print(f"  {name} : {t}")
     else:
-        print("Lo siento, tu parser detectó errores en la entrada")
+        print("Lo siento, tu parser detectó errores en la entrada.")
+        print("\nTabla de símbolos:")
+        for name, t in symbol_table.items():
+            print(f"  {name} : {t}")
 
