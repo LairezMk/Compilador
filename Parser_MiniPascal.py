@@ -24,8 +24,7 @@ def p_program(p):
 def p_declaration_sections(p):
     '''declaration_sections : declaration_sections declaration_section
                             | empty'''
-    pass
-    #p[0] = p[1]  # Guardar la sección de declaraciones en la tabla de símbolos
+    p[0] = p[1]  # Guardar la tabla de símbolos
 
 
 def p_declaration_section(p):
@@ -37,7 +36,7 @@ def p_declaration_section(p):
                            | function_declaration
                            | constructor_declaration
                            | method_declaration'''
-    pass
+    p[0] = p[1]  # Guardar la sección de declaración en la tabla de símbolos
 
 def p_method_declaration(p):
     '''method_declaration : CONSTRUCTOR ID DOT ID LPAREN parameter_list RPAREN SEMICOLON block 
@@ -80,12 +79,12 @@ def p_id_list_multiple(p):
 
 def p_var_declaration(p):
     'var_declaration : VAR declaration_list'
-    pass
+    p[0] = ('var_declaration', p[2])
 
 def p_declaration_list(p):
     '''declaration_list : declaration
                         | declaration_list declaration'''
-    pass
+    p[0] = p[1]  # Guardar la lista de declaraciones en la tabla de símbolos
 
 def p_declaration(p):
     'declaration : id_list COLON type_specifier SEMICOLON'
@@ -116,15 +115,23 @@ def p_type_declaration(p):
 def p_type_list(p):
     '''type_list : type_definition
                  | type_list type_definition'''
-    pass
+    p[0] = p[1]  # Guardar la lista de tipos en la tabla de símbolos
 
-#def p_type_specifier_enum(p):
-#    '''type_specifier : LPAREN id_list RPAREN'''
-#    p[0] = ('enum', p[2])
 
 def p_type_definition(p):
     'type_definition : ID EQUAL type_specifier SEMICOLON'
-    pass
+    global symbol_table
+    type_name = p[1]
+    type_value = p[3]
+
+    if type_name in symbol_table:
+        lineno = p.lineno(1)
+        print(f"Error semántico en la linea {lineno}: El tipo '{type_name}' ya fue declarado.")
+        global hay_error
+        hay_error = True
+    else:
+        symbol_table[type_name] = ('type', type_value)
+        p[0] = ('type', type_name, type_value)
 
 def p_type_specifier(p):
     '''type_specifier : ARRAY LBRACKET type_expression RBRACKET OF type_specifier
@@ -146,20 +153,33 @@ def p_type_specifier(p):
 def p_type_expression(p):
     '''type_expression : type_expression COMMA subrange
                        | subrange'''
-    pass
+    if len(p) == 2:
+        # Solo un subrango, por ejemplo: 1..10
+        p[0] = [p[1]]
+    else:
+        # Lista de subrangos, por ejemplo: 1..10, 2..5
+        p[0] = p[1] + [p[3]]
 
 def p_subrange(p):
     '''subrange : NUMBER DOTDOT NUMBER
                 | NUMBER DOTDOT ID'''
-
-    pass
+    # Ejemplo: 1..10 o 1..N
+    p[0] = ('subrange', p[1], p[3])
 
 #RECORD -----------------------------------------------
 def p_field_list(p):
     '''field_list : field_list field
                   | field
                   | empty'''
-    pass
+    if len(p) == 2:
+        # field o empty
+        if p[1] == None:
+            p[0] = []
+        else:
+            p[0] = [p[1]]
+    else:
+        # field_list field
+        p[0] = p[1] + [p[2]]
 
 def p_field(p):
     '''field : id_list COLON type_specifier
@@ -170,22 +190,46 @@ def p_field(p):
              | if_statement
              | case_statement
              | assignment_statement'''
-    pass
+    # Para los campos de registro típicos
+    if len(p) == 4 and isinstance(p[1], list):
+        p[0] = ('field', p[1], p[3])
+    elif len(p) == 5 and p[1] == 'VAR':
+        p[0] = ('var_field', p[2], p[4])
+    elif len(p) == 5 and isinstance(p[1], list):
+        p[0] = ('field_with_string', p[1], p[3])
+    else:
+        # Para if_statement, case_statement, assignment_statement
+        p[0] = p[1]
 
 def p_case_part(p):
     '''case_part : CASE ID COLON type_specifier OF case_list SEMICOLON
                  | empty'''
-    pass
+    if len(p) == 2:
+        # empty
+        p[0] = []
+    else:
+        # CASE ID : type_specifier OF case_list ;
+        p[0] = ('case_part', p[2], p[4], p[6])
 
 def p_case_list(p):
     '''case_list : case_list SEMICOLON case_element
                  | case_element'''
-    pass
+    if len(p) == 2:
+        # Solo un case_element
+        p[0] = [p[1]]
+    else:
+        # case_list ; case_element
+        p[0] = p[1] + [p[3]]
 
 def p_case_element(p):
     '''case_element : NUMBER COLON LPAREN field_list RPAREN
                     | NUMBER COLON field_list'''
-    pass
+    if len(p) == 6:
+        # NUMBER : ( field_list )
+        p[0] = ('case_element', p[1], p[4])
+    else:
+        # NUMBER : field_list
+        p[0] = ('case_element', p[1], p[3])
 #---------------------------------------------------
 
 # OBJECT -----------------------------------------------
@@ -194,14 +238,27 @@ def p_method_list(p):
     '''method_list : method_list method
                    | method
                    | empty'''
-    pass
+    if len(p) == 2:
+        if p[1] is None:
+            p[0] = []
+        else:
+            p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
 
 def p_method(p):
     '''method : CONSTRUCTOR ID LPAREN field_list RPAREN SEMICOLON
               | PROCEDURE ID LPAREN field_list RPAREN SEMICOLON  
               | FUNCTION ID LPAREN field_list RPAREN COLON type_specifier SEMICOLON
               | DESTRUCTOR ID SEMICOLON'''
-    pass
+    if p[1] == 'CONSTRUCTOR':
+        p[0] = ('constructor', p[2], p[4])
+    elif p[1] == 'PROCEDURE':
+        p[0] = ('procedure', p[2], p[4])
+    elif p[1] == 'FUNCTION':
+        p[0] = ('function', p[2], p[4], p[7])
+    elif p[1] == 'DESTRUCTOR':
+        p[0] = ('destructor', p[2])
 
 # ----------------------------------------------------
 
@@ -209,17 +266,28 @@ def p_case_statement(p):
     '''case_statement : CASE expression OF case_list END SEMICOLON
                       | CASE expression OF case_list ELSE statement_list END SEMICOLON  
                       | CASE expression OF case_list END'''
-    pass
+    if len(p) == 6:
+        # CASE expression OF case_list END
+        p[0] = ('case', p[2], p[4])
+    elif len(p) == 8:
+        # CASE expression OF case_list END SEMICOLON
+        p[0] = ('case', p[2], p[4])
+    else:
+        # CASE expression OF case_list ELSE statement_list END SEMICOLON
+        p[0] = ('case_else', p[2], p[4], p[6])
 
 def p_type_specifier_longint(p):
     'type_specifier : LONGINT'
-    pass
+    p[0] = 'LONGINT'
 
 # Reglas para las declaraciones de procedimientos.
 def p_procedure_declarations(p):
     '''procedure_declarations : procedure_declaration
                               | procedure_declarations procedure_declaration'''
-    pass
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
 
 # Definición de un procedimiento.
 # En esta gramática simplificada, un procedimiento tiene: 
@@ -241,9 +309,7 @@ def p_procedure_declaration(p):
             param_type = param[2]
             symbol_table[param_name] = ('parameter', param_type)
 
-# def p_function_declaration(p):
-#     'function_declaration : FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON block SEMICOLON'
-#     p[0] = ('function', p[2], p[4], p[7], p[9])
+
 
 def p_function_declaration(p):
     '''function_declaration : FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON block SEMICOLON
@@ -251,14 +317,21 @@ def p_function_declaration(p):
     func_name = p[2]
     symbol_table[func_name] = ('function')
 
+    # Add parameters to symbol table (if any)
+    if len(p) > 4 and p[4]:
+        for param in p[4]:
+            param_name = param[1]
+            param_type = param[2]
+            symbol_table[param_name] = ('parameter', param_type)
+
 def p_function_call(p):
     'function_call : ID LPAREN expression_list RPAREN'
-    pass
+    p[0] = ('function_call', p[1], p[3])
 
 
 def p_factor_function_call(p):
     'factor : function_call'
-    pass
+    p[0] = p[1]
     
 # Lista de parámetros: en este ejemplo se permite únicamente una declaración de parámetros.
 def p_parameter_list(p):
@@ -279,13 +352,18 @@ def p_parameter(p):
 # El bloque compuesto se encierra entre BEGIN y END.
 def p_compound_statement(p):
     '''compound_statement : BEGIN statement_list END'''
-    pass
+    p[0] = ('compound_statement', p[2])
 
 # Una lista de sentencias: una o varias separadas por punto y coma.
 def p_statement_list_multi(p):
     '''statement_list : statement SEMICOLON
                       | statement_list statement SEMICOLON'''
-    pass
+    if len(p) == 3:
+        # statement SEMICOLON
+        p[0] = [p[1]]
+    else:
+        # statement_list statement SEMICOLON
+        p[0] = p[1] + [p[2]]
 
 # def p_statement_list_tail(p):
 #     '''statement_list_tail : SEMICOLON statement_list_tail 
@@ -302,26 +380,40 @@ def p_statement(p):
                  | for_statement
                  | case_statement
                  | with_statement
+                 | repeat_statement
                  | empty'''
-    pass
+    p[0] = p[1]
 
 def p_with_statement(p):
     '''with_statement : WITH variable DO statement'''
-    pass
+    p[0] = ('with', p[2], p[4])
+    
 
 def p_if_statement(p):
     '''if_statement : IF expression THEN statement ELSE statement
                     | IF expression THEN statement
                     | IF expression IN statement THEN statement ELSE statement
                     | IF expression IN statement THEN statement'''
-    pass
-
+    if len(p) == 5:
+        # IF expression THEN statement
+        p[0] = ('if', p[2], p[4])
+    elif len(p) == 7 and p[3] == 'THEN':
+        # IF expression THEN statement ELSE statement
+        p[0] = ('if_else', p[2], p[4], p[6])
+    elif len(p) == 7 and p[4] == 'THEN':
+        # IF expression IN statement THEN statement
+        p[0] = ('if_in', p[2], p[4], p[6])
+    elif len(p) == 9:
+        # IF expression IN statement THEN statement ELSE statement
+        p[0] = ('if_in_else', p[2], p[4], p[6], p[8])
 
 def p_for_statement(p):
     '''for_statement : FOR ID COLON_EQUAL expression TO expression DO block
                      | FOR ID COLON_EQUAL expression DOWNTO expression DO block'''
-    pass
-
+    if p[5] == 'TO':
+        p[0] = ('for', p[2], p[4], p[6], p[8])
+    else:
+        p[0] = ('for_downto', p[2], p[4], p[6], p[8])
 # Asignación: variable, token de asignación, y expresión. EJEMPLO: x := 5 + 3.
 def p_assignment_statement(p):
     '''assignment_statement : variable COLON_EQUAL expression
@@ -331,7 +423,19 @@ def p_assignment_statement(p):
                             | variable TIMES COLON_EQUAL expression
                             | variable DIVIDE COLON_EQUAL expression
                             | ID COLON_EQUAL expression'''
-    pass
+    if len(p) == 4 and p[2] == ':=':
+        # variable := expression
+        p[0] = ('assign', p[1], p[3])
+    elif len(p) == 5 and p[2] == ':=':
+        # variable := BOOLEAN_LITERAL ;
+        p[0] = ('assign_bool', p[1], p[3])
+    elif len(p) == 5 and p[2] in ('+', '-', '*', '/'):
+        # variable op := expression
+        op_map = {'+': 'add_assign', '-': 'sub_assign', '*': 'mul_assign', '/': 'div_assign'}
+        p[0] = (op_map[p[2]], p[1], p[4])
+    elif len(p) == 4 and isinstance(p[1], str):
+        # ID := expression
+        p[0] = ('assign', p[1], p[3])
 
 # Una variable es un identificador, con o sin índice (para arreglos).
 def p_variable_simple(p):
@@ -353,75 +457,113 @@ def p_variable_simple(p):
     
 def p_variable_index(p):
     'variable : ID LBRACKET index_list RBRACKET'
-    pass
+    p[0] = ('array_access', p[1], p[3])
 
 def p_index_list(p):
     '''index_list : expression
                   | index_list COMMA expression'''
-    pass
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
         
 # Sentencia while: WHILE expresión DO sentencia.
 def p_while_statement(p):
     'while_statement : WHILE expression DO statement'
-    pass
+    p[0] = ('while', p[2], p[4])
     
 # Llamada a procedimiento: ID ( lista de expresiones ).
 def p_procedure_call(p):
     '''procedure_call : ID LPAREN expression_list RPAREN
                       | ID'''
-    pass
+    if len(p) == 2:
+        p[0] = ('procedure_call', p[1], [])
+    else:
+        p[0] = ('procedure_call', p[1], p[3])
     
 # Lista de expresiones: cero o más expresiones separadas por comas.
 def p_expression_list_multi(p):
     'expression_list : expression expression_list_tail'
-    pass
+    if p[2] is None:
+        p[0] = [p[1]]
+    else:
+        # p[2] es una lista de expresiones adicionales
+        p[0] = [p[1]] + p[2]
     
 def p_expression_list_tail(p):
     '''expression_list_tail : COMMA expression expression_list_tail
                             | empty'''
-    pass
+    if len(p) == 2:
+        # empty
+        p[0] = None
+    else:
+        # COMMA expression expression_list_tail
+        if p[3] is None:
+            p[0] = [p[2]]
+        else:
+            p[0] = [p[2]] + p[3]
         
 def p_expression_list_empty(p):
     'expression_list : empty'
-    pass
+    p[0] = []
 
 # Expresión: una simple expresión, opcionalmente seguida de un operador relacional y otra simple expresión.
 def p_expression(p):
     '''expression : simple_expression relop simple_expression
                   | simple_expression'''
-    pass
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = ('relop', p[2], p[1], p[3])
         
 # simple_expression: secuencia de términos sumados o restados.
 def p_simple_expression(p):
     '''simple_expression : term simple_expression_tail'''
-    pass
+    if p[2] is None:
+        p[0] = p[1]
+    else:
+        # p[2] es una tupla (addop, term)
+        p[0] = ('simple_expression', p[1], p[2])
     
 def p_simple_expression_tail(p):
     '''simple_expression_tail : addop term
                               | empty'''
-    pass
+    if len(p) == 2:
+        # empty
+        p[0] = None
+    else:
+        # addop term
+        p[0] = (p[1], p[2])
         
 def p_addop(p):
     '''addop : PLUS
              | MINUS'''
-    pass
+    p[0] = p[1]
     
 # term: secuencia de factores multiplicados o divididos.
 def p_term(p):
     'term : factor term_tail'
-    pass
+    if p[2] is None:
+        p[0] = p[1]
+    else:
+        # p[2] es una tupla (mulop, factor)
+        p[0] = ('term', p[1], p[2])
     
 def p_term_tail(p):
     '''term_tail : mulop factor
                  | empty'''
-    pass
+    if len(p) == 2:
+        # empty
+        p[0] = None
+    else:
+        # mulop factor
+        p[0] = (p[1], p[2])
         
 def p_mulop(p):
     '''mulop : TIMES
              | DIVIDE
              | DIV'''
-             
-    pass
+    p[0] = p[1]
 
 def p_expression_binop(p):
     '''expression : expression PLUS expression
@@ -429,24 +571,24 @@ def p_expression_binop(p):
                   | expression TIMES expression
                   | expression DIVIDE expression
                   | expression MOD expression'''
-    pass
+    p[0] = ('binop', p[2], p[1], p[3])
     
 # factor: puede ser una expresión entre paréntesis, una variable, un número o una cadena.
 def p_factor_expr(p):
     'factor : LPAREN expression RPAREN'
-    pass
+    p[0] = p[2]
     
 def p_factor_variable(p):
     'factor : variable'
-    pass
+    p[0] = p[1]
     
 def p_factor_number(p):
     'factor : NUMBER'
-    pass
+    p[0] = ('number', p[1])
 
 def p_factor_string(p):
     'factor : STRING_LITERAL'
-    pass
+    p[0] = ('string', p[1])
 
 
     
@@ -458,56 +600,72 @@ def p_relop(p):
              | GREAT_EQUAL
              | EQUAL
              | DIFFERENT'''
-    pass
+    p[0] = p[1]
     
 # Regla para la producción vacía.
 def p_empty(p):
     'empty :'
-    pass
+    p[0] = None
 
 def p_statement_readln(p):
     'statement : READLN'
-    pass
+    p[0] = ('readln',)
 
 def p_statement_readln_parent(p):
     '''statement : READLN LPAREN variable RPAREN
                  | READLN LBRACKET variable RBRACKET'''
-    pass
+    p[0] = ('readln_var', p[3])
 
 def p_statement_write(p):
     'statement : WRITE LPAREN expression_list RPAREN'
-    pass
+    p[0] = ('write', p[3])
 
 def p_statement_writeln(p):
     '''statement : WRITELN LPAREN write_arguments RPAREN'''
                 # | WRITELN LPAREN write_arguments RPAREN SEMICOLON'''
-    pass
+    p[0] = ('writeln', p[3])
 
 def p_write_arguments(p):
     '''write_arguments : write_argument
                        | write_arguments COMMA write_argument'''
-    pass
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
 
 def p_write_argument(p):
     '''write_argument : expression
                       | expression COLON expression
                       | expression COLON expression COLON expression'''
-    pass
+    if len(p) == 2:
+        p[0] = ('write_arg', p[1])
+    elif len(p) == 4:
+        p[0] = ('write_arg_format', p[1], p[3])
+    else:
+        p[0] = ('write_arg_format_width', p[1], p[3], p[5])
 
 #Definición para USES 
 def p_statement_uses(p):
     'statement : USES ID SEMICOLON'
-    pass
+    p[0] = ('uses', p[2])  # Guardar el nombre del módulo en la tabla de símbolos
 
 #Definicion para CONST
 def p_constant_declaration(p):
     'constant_declaration : CONST constant_list'
-    pass
+    p[0] = ('constant_declaration', p[2])
+
+def p_repeat_statement(p):
+    'repeat_statement : REPEAT statement_list UNTIL expression SEMICOLON'
+    p[0] = ('repeat', p[2], p[4])
 
 def p_constant_list(p):
     '''constant_list : constant
                      | constant_list constant'''
-    pass
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
+    
 
 def p_constant(p):
     '''constant : ID EQUAL CHARACTER_LITERAL SEMICOLON
@@ -532,7 +690,12 @@ def p_expression_logical(p):
     '''expression : expression AND expression
                   | expression OR expression
                   | NOT expression'''
-    pass
+    if len(p) == 4:
+        # AND / OR
+        p[0] = ('logical_op', p[2], p[1], p[3])
+    else:
+        # NOT
+        p[0] = ('not_op', p[2])
 
 
 

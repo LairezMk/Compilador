@@ -192,6 +192,10 @@ def t_BYTE(t):
     r'\bbyte\b'
     return t
 
+def t_REPEAT(t):
+    r'\brepeat\b'
+    return t
+
 def t_CASE(t):
     r'\bcase\b'
     return t
@@ -284,9 +288,6 @@ def t_PROGRAM(t):
     r'\bprogram\b'
     return t
 
-def t_REPEAT(t):
-    r'\brepeat\b'
-    return t
 
 def t_READLN(t):
     r'\breadln\b'
