@@ -1,26 +1,39 @@
-program MenuOpciones;
-var
-  opcion: integer;
-begin
-  repeat
-    writeln('=== MENÚ DE OPCIONES ===');
-    writeln('1. Saludar');
-    writeln('2. Sumar dos números');
-    writeln('3. Salir');
-    writeln('Seleccione una opción:');
-    readln(opcion);
+program TestPascal;
 
-    case opcion of
-      1: writeln('¡Hola, usuario!');
-      2: begin
-        var a, b: integer;
-        writeln('Ingrese dos números:');
-        readln(a, b);
-        writeln('La suma es: ', a + b);
-      end;
-      3: writeln('Saliendo...');
-    else
-      writeln('Opción inválida. Intente de nuevo.');
-    end;
-  until opcion = 3;
+const
+  PI = 3.14;
+  MAX = 100;
+
+var
+  i, sum: integer;
+  radius: real;
+  name: string;
+
+procedure PrintResult(value: integer);
+begin
+  writeln('Resultado: ', value);
+end;
+
+begin
+  sum := 0;
+  for i := 1 to MAX do
+  begin
+    sum := sum + i;
+  sum +:=10;
+  sum -:=10;
+  sum *:=10;
+  sum /:=10;
+  end;
+
+  writeln('Suma de 1 a ', MAX, ' es: ', sum);
+
+  write('Ingresa el radio del círculo: ');
+  readln(radius);
+  writeln('Área del círculo: ', PI * radius);
+
+  write('Ingresa tu nombre: ');
+  readln(name);
+  writeln('Hola, ', name);
+
+  PrintResult(sum);
 end.

@@ -13,6 +13,7 @@ precedence = (
     ('nonassoc', 'ELSE'),  # ELSE tiene menor precedencia
 )
 
+current_params = []  # Lista para almacenar los parámetros actuales
 
 # Reglas de la gramática
 def p_program(p):
@@ -187,6 +188,7 @@ def p_field(p):
              | VAR id_list COLON type_specifier
              | VAR id_list COLON type_specifier SEMICOLON
              | id_list LPAREN STRING_LITERAL RPAREN
+             | statement
              | if_statement
              | case_statement
              | assignment_statement'''
@@ -220,6 +222,14 @@ def p_case_list(p):
     else:
         # case_list ; case_element
         p[0] = p[1] + [p[3]]
+
+def p_case_list_opt_semicolon(p):
+    '''case_list_opt_semicolon : case_list
+                               | case_list SEMICOLON'''
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = p[1]
 
 def p_case_element(p):
     '''case_element : NUMBER COLON LPAREN field_list RPAREN
@@ -263,9 +273,9 @@ def p_method(p):
 # ----------------------------------------------------
 
 def p_case_statement(p):
-    '''case_statement : CASE expression OF case_list END SEMICOLON
-                      | CASE expression OF case_list ELSE statement_list END SEMICOLON  
-                      | CASE expression OF case_list END'''
+    '''case_statement : CASE expression OF case_list_opt_semicolon END SEMICOLON
+                      | CASE expression OF case_list_opt_semicolon ELSE statement_list END SEMICOLON
+                      | CASE expression OF case_list_opt_semicolon END'''
     if len(p) == 6:
         # CASE expression OF case_list END
         p[0] = ('case', p[2], p[4])
@@ -299,15 +309,16 @@ def p_procedure_declaration(p):
                              | PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON FORWARD SEMICOLON
                              | PROCEDURE ID LPAREN RPAREN SEMICOLON FORWARD SEMICOLON
                              | PROCEDURE ID SEMICOLON FORWARD SEMICOLON'''
+    global current_params
     proc_name = p[2]
     symbol_table[proc_name] = ('procedure')
-
-    # Add parameters to symbol table (if any)
-    if len(p) > 5 and p[4]:  # Check if parameter_list exists and is not empty
-        for param in p[4]:
-            param_name = param[1]  # Assuming parameter structure is ('parameter', name, type)
-            param_type = param[2]
-            symbol_table[param_name] = ('parameter', param_type)
+    # Guarda los parámetros actuales solo si existen
+    if len(p) > 4 and isinstance(p[4], list):
+        current_params = [param[1] for param in p[4]]
+        print(f"Parámetros actuales para el procedimiento '{proc_name}': {current_params}")
+    else:
+        current_params = []
+    current_params = []  # Reinicia la lista de parámetros actuales después de la declaración
 
 
 
@@ -317,12 +328,12 @@ def p_function_declaration(p):
     func_name = p[2]
     symbol_table[func_name] = ('function')
 
-    # Add parameters to symbol table (if any)
+    '''# Add parameters to symbol table (if any)
     if len(p) > 4 and p[4]:
         for param in p[4]:
             param_name = param[1]
             param_type = param[2]
-            symbol_table[param_name] = ('parameter', param_type)
+            symbol_table[param_name] = ('parameter', param_type)'''
 
 def p_function_call(p):
     'function_call : ID LPAREN expression_list RPAREN'
@@ -351,24 +362,31 @@ def p_parameter(p):
 
 # El bloque compuesto se encierra entre BEGIN y END.
 def p_compound_statement(p):
-    '''compound_statement : BEGIN statement_list END'''
-    p[0] = ('compound_statement', p[2])
+    '''compound_statement : BEGIN statement_list END
+                            | BEGIN local_var_declarations statement_list END
+                            ''' 
+    
+    p[0] = ('compound_statement', p[2], p[3])  # Guardar la lista de sentencias y la tabla de símbolos
+
+def p_local_var_declarations(p):
+    '''local_var_declarations : var_declaration
+                             | empty'''
+    p[0] = p[1]
 
 # Una lista de sentencias: una o varias separadas por punto y coma.
 def p_statement_list_multi(p):
-    '''statement_list : statement SEMICOLON
-                      | statement_list statement SEMICOLON'''
+    '''statement_list : statement_list statement SEMICOLON
+                      | statement_list statement'''
     if len(p) == 3:
-        # statement SEMICOLON
-        p[0] = [p[1]]
+        p[0] = p[1] + [p[2]]
     else:
-        # statement_list statement SEMICOLON
+        p[0] = p[1] + [p[2]]
         p[0] = p[1] + [p[2]]
 
-# def p_statement_list_tail(p):
-#     '''statement_list_tail : SEMICOLON statement_list_tail 
-#                            | empty'''
-#     pass
+def p_statement_list_single(p):
+    'statement_list : statement'
+    p[0] = [p[1]]
+
 
 # Sentencia: puede ser asignación, condicional, ciclo, llamada a procedimiento o bloque compuesto.
 def p_statement(p):
@@ -442,8 +460,9 @@ def p_variable_simple(p):
     '''variable : ID
                 | variable LBRACKET expression RBRACKET
                 | variable DOT ID'''
+    global current_params
     if len(p) == 2:
-        if p[1] not in symbol_table:
+        if p[1] not in symbol_table and p[1] not in current_params:
             lineno = p.lineno(1)
             print(f"Error semántico en la linea {lineno}: Variable '{p[1]}' no declarada.")
             global hay_error
@@ -613,15 +632,25 @@ def p_statement_readln(p):
 
 def p_statement_readln_parent(p):
     '''statement : READLN LPAREN variable RPAREN
-                 | READLN LBRACKET variable RBRACKET'''
+                 | READLN LBRACKET variable RBRACKET
+                 | READLN LPAREN variable_list RPAREN'''
     p[0] = ('readln_var', p[3])
+
+def p_variable_list(p):
+    '''variable_list : variable
+                     | variable_list COMMA variable'''
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
 
 def p_statement_write(p):
     'statement : WRITE LPAREN expression_list RPAREN'
     p[0] = ('write', p[3])
 
 def p_statement_writeln(p):
-    '''statement : WRITELN LPAREN write_arguments RPAREN'''
+    '''statement : WRITELN LPAREN write_arguments RPAREN
+                 | WRITELN LPAREN expression RPAREN'''
                 # | WRITELN LPAREN write_arguments RPAREN SEMICOLON'''
     p[0] = ('writeln', p[3])
 
