@@ -14,6 +14,7 @@ precedence = (
 )
 
 current_params = []  # Lista para almacenar los parámetros actuales
+param_stack = []  # Pila para almacenar los parámetros de los procedimientos
 
 # Reglas de la gramática
 def p_program(p):
@@ -309,16 +310,17 @@ def p_procedure_declaration(p):
                              | PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON FORWARD SEMICOLON
                              | PROCEDURE ID LPAREN RPAREN SEMICOLON FORWARD SEMICOLON
                              | PROCEDURE ID SEMICOLON FORWARD SEMICOLON'''
-    global current_params
+    global param_stack
     proc_name = p[2]
     symbol_table[proc_name] = ('procedure')
-    # Guarda los parámetros actuales solo si existen
+    # Entra a un nuevo ámbito de parámetros
     if len(p) > 4 and isinstance(p[4], list):
-        current_params = [param[1] for param in p[4]]
-        print(f"Parámetros actuales para el procedimiento '{proc_name}': {current_params}")
+        param_stack.append([param[1] for param in p[4]])
     else:
-        current_params = []
-    current_params = []  # Reinicia la lista de parámetros actuales después de la declaración
+        param_stack.append([])
+    # El parser analiza el bloque aquí
+    # ...
+    param_stack.pop()  # Sale del ámbito de parámetros
 
 
 
@@ -460,15 +462,16 @@ def p_variable_simple(p):
     '''variable : ID
                 | variable LBRACKET expression RBRACKET
                 | variable DOT ID'''
-    global current_params
+    global param_stack
+    all_params = [name for scope in param_stack for name in scope]
     if len(p) == 2:
-        if p[1] not in symbol_table and p[1] not in current_params:
+        if p[1] not in symbol_table and p[1] not in all_params:
             lineno = p.lineno(1)
             print(f"Error semántico en la linea {lineno}: Variable '{p[1]}' no declarada.")
             global hay_error
             hay_error = True
         else:
-            p[0] = ('var', p[1])  # Store the variable name
+            p[0] = ('var', p[1])
     elif len(p) == 5:
         p[0] = ('array_access', p[1], p[3])
     elif len(p) == 4:
