@@ -14,7 +14,7 @@ precedence = (
 )
 
 current_params = []  # Lista para almacenar los parámetros actuales
-param_stack = []  # Pila para almacenar los parámetros de los procedimientos
+param_stack = [{}]  # Pila para almacenar los parámetros de los procedimientos
 
 # Reglas de la gramática
 def p_program(p):
@@ -107,7 +107,7 @@ def p_declaration(p):
 
 # El bloque se compone de declaraciones (variables y/o procedimientos) seguidas de una sentencia compuesta.
 def p_block(p):
-    'block : declaration_sections compound_statement'
+    '''block : declaration_sections compound_statement'''
     p[0] = ('block', p[1], p[2])  # Guardar la tabla de símbolos y la sentencia compuesta
 
 def p_type_declaration(p):
@@ -305,28 +305,15 @@ def p_procedure_declarations(p):
 # PROCEDURE id (lista de parámetros) ; block ;
 def p_procedure_declaration(p):
     '''procedure_declaration : PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON block SEMICOLON
-                             | PROCEDURE ID LPAREN RPAREN SEMICOLON block SEMICOLON
-                             | PROCEDURE ID SEMICOLON block SEMICOLON
-                             | PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON FORWARD SEMICOLON
-                             | PROCEDURE ID LPAREN RPAREN SEMICOLON FORWARD SEMICOLON
-                             | PROCEDURE ID SEMICOLON FORWARD SEMICOLON'''
+                             | PROCEDURE ID LPAREN  RPAREN SEMICOLON block SEMICOLON'''
     global param_stack
-    proc_name = p[2]
-    symbol_table[proc_name] = ('procedure')
-    # Entra a un nuevo ámbito de parámetros
-    if len(p) > 4 and isinstance(p[4], list):
-        param_stack.append([param[1] for param in p[4]])
-    else:
-        param_stack.append([])
-    # El parser analiza el bloque aquí
-    # ...
-    param_stack.pop()  # Sale del ámbito de parámetros
-
-
+    param_stack.pop()  # Pop the parameter scope when exiting the procedure
 
 def p_function_declaration(p):
     '''function_declaration : FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON block SEMICOLON
-                            | FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON FORWARD SEMICOLON'''
+                            | FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON FORWARD SEMICOLON
+                            | FUNCTION ID LPAREN RPAREN COLON type_specifier SEMICOLON block SEMICOLON
+                            | FUNCTION ID LPAREN RPAREN COLON type_specifier SEMICOLON FORWARD SEMICOLON'''
     func_name = p[2]
     symbol_table[func_name] = ('function')
 
@@ -348,19 +335,21 @@ def p_factor_function_call(p):
     
 # Lista de parámetros: en este ejemplo se permite únicamente una declaración de parámetros.
 def p_parameter_list(p):
-    '''parameter_list : parameter
-                      | parameter_list SEMICOLON parameter
+    '''parameter_list : parameter_list SEMICOLON parameter
+                      | parameter
                       | empty'''
-    if len(p) == 2 and p[1] != 'empty':
-        p[0] = [p[1]]
-    elif len(p) == 4:
+    if len(p) == 4:
         p[0] = p[1] + [p[3]]
+    elif len(p) == 2:
+        p[0] = [p[1]]
     else:
         p[0] = []
 
 def p_parameter(p):
-    '''parameter : ID COLON type_specifier'''
-    p[0] = ('parameter', p[1], p[3])  # Store parameter info for use in p_procedure_declaration
+    '''parameter : ID COLON type_specifier'''  # Changed from 'type' to 'type_specifier'
+    global param_stack
+    param_stack[-1][p[1]] = p[3]  # Add parameter to current scope
+    p[0] = (p[1], p[3])
 
 # El bloque compuesto se encierra entre BEGIN y END.
 def p_compound_statement(p):
