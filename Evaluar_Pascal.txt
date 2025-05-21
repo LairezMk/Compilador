@@ -5,9 +5,11 @@ const
   MAX = 100;
 
 var
-  i, sum: integer;
+  i, e, sum: integer;
   radius: real;
   name: string;
+
+
 
 procedure PrintResult(value: integer);
 begin
@@ -15,6 +17,11 @@ begin
 end;
 
 begin
+  i:= 1;
+  e:= 0;
+  sum:= 1/0;
+  name:= "hola";
+  sum:= i + name;
   sum := 0;
   for i := 1 to MAX do
   begin
@@ -22,8 +29,9 @@ begin
   sum +:=10;
   sum -:=10;
   sum *:=10;
-  sum /:=10;
+  sum /:=0;
   end;
+
 
   writeln('Suma de 1 a ', MAX, ' es: ', sum);
 

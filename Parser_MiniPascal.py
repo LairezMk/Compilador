@@ -102,7 +102,7 @@ def p_declaration(p):
             hay_error = True
         else:
             p[0] = ('var', name, var_type)
-            symbol_table[name] = ('var', var_type)
+            symbol_table[name] = ('var', var_type.upper())  # Guardar la variable en la tabla de símbolos
 
 
 # El bloque se compone de declaraciones (variables y/o procedimientos) seguidas de una sentencia compuesta.
@@ -424,6 +424,34 @@ def p_for_statement(p):
     else:
         p[0] = ('for_downto', p[2], p[4], p[6], p[8])
 # Asignación: variable, token de asignación, y expresión. EJEMPLO: x := 5 + 3.
+def get_type(node):
+    if isinstance(node, tuple):
+        if node[0] == 'var':
+            var_name = node[1]
+            t = symbol_table.get(var_name, (None, None))[1]
+            return t.upper() if t else None
+        elif node[0] == 'number':
+            return 'INTEGER'
+        elif node[0] == 'string':
+            return 'STRING'
+        elif node[0] == 'binop':
+            left = get_type(node[2])
+            right = get_type(node[3])
+            if left == right:
+                return left
+            else:
+                return None  # Tipos incompatibles
+        # Agrega más casos según tu AST
+    elif isinstance(node, str):
+        if node in symbol_table:
+            t = symbol_table[node][1]
+            return t.upper() if t else None
+        if node in ['TRUE', 'FALSE']:
+            return 'BOOLEAN'
+    elif isinstance(node, (int, float)):
+        return 'INTEGER'
+    return None
+
 def p_assignment_statement(p):
     '''assignment_statement : variable COLON_EQUAL expression
                             | variable COLON_EQUAL BOOLEAN_LITERAL SEMICOLON
@@ -432,18 +460,62 @@ def p_assignment_statement(p):
                             | variable TIMES COLON_EQUAL expression
                             | variable DIVIDE COLON_EQUAL expression
                             | ID COLON_EQUAL expression'''
+    global hay_error
+
+    # variable := expression
     if len(p) == 4 and p[2] == ':=':
-        # variable := expression
+        var_type = get_type(p[1])
+        expr_type = get_type(p[3])
+        if var_type and expr_type and var_type != expr_type:
+            lineno = p.lineno(1)
+            print(f"Error de tipos en la línea {lineno}: No se puede asignar '{expr_type}' a '{var_type}'.")
+            hay_error = True
         p[0] = ('assign', p[1], p[3])
+
+    # variable := BOOLEAN_LITERAL ;
     elif len(p) == 5 and p[2] == ':=':
-        # variable := BOOLEAN_LITERAL ;
+        var_type = get_type(p[1])
+        expr_type = 'BOOLEAN'
+        if var_type and var_type != expr_type:
+            lineno = p.lineno(1)
+            print(f"Error de tipos en la línea {lineno}: No se puede asignar '{expr_type}' a '{var_type}'.")
+            hay_error = True
         p[0] = ('assign_bool', p[1], p[3])
-    elif len(p) == 5 and p[2] in ('+', '-', '*', '/'):
-        # variable op := expression
+
+    # variable op := expression
+    elif len(p) == 5 and p[2] in ('+', '-', '*'):
+        var_type = get_type(p[1])
+        expr_type = get_type(p[4])
+        if var_type and expr_type and var_type != expr_type:
+            lineno = p.lineno(1)
+            print(f"Error de tipos en la línea {lineno}: No se puede operar '{var_type}' con '{expr_type}' en asignación compuesta.")
+            hay_error = True
         op_map = {'+': 'add_assign', '-': 'sub_assign', '*': 'mul_assign', '/': 'div_assign'}
         p[0] = (op_map[p[2]], p[1], p[4])
+
+    elif len(p) == 5 and p[2] == '/':
+        # variable /:= expression
+        if isinstance(p[4], tuple) and p[4][0] == 'number' and p[4][1] == 0:
+            lineno = p.lineno(2)
+            print(f"Error semántico en la línea {lineno}: División por cero no permitida en asignación compuesta.")
+            hay_error = True
+        var_type = get_type(p[1])
+        expr_type = get_type(p[4])
+        if var_type and expr_type and var_type != expr_type:
+            lineno = p.lineno(1)
+            print(f"Error de tipos en la línea {lineno}: No se puede operar '{var_type}' con '{expr_type}' en asignación compuesta.")
+            hay_error = True
+        op_map = {'+': 'add_assign', '-': 'sub_assign', '*': 'mul_assign', '/': 'div_assign'}
+        p[0] = (op_map[p[2]], p[1], p[4])    
+
+    # ID := expression
     elif len(p) == 4 and isinstance(p[1], str):
-        # ID := expression
+        var_type = get_type(p[1])
+        expr_type = get_type(p[3])
+        if var_type and expr_type and var_type != expr_type:
+            lineno = p.lineno(1)
+            print(f"Error de tipos en la línea {lineno}: No se puede asignar '{expr_type}' a '{var_type}'.")
+            hay_error = True
         p[0] = ('assign', p[1], p[3])
 
 # Una variable es un identificador, con o sin índice (para arreglos).
@@ -558,6 +630,12 @@ def p_term(p):
         p[0] = p[1]
     else:
         # p[2] es una tupla (mulop, factor)
+        # Verificación de división por cero aquí
+        if p[2][0] in ('/', 'DIV') and isinstance(p[2][1], tuple) and p[2][1][0] == 'number' and p[2][1][1] == 0:
+            lineno = p.lineno(1)
+            print(f"Error semántico en la línea {lineno}: División por cero no permitida.")
+            global hay_error
+            hay_error = True
         p[0] = ('term', p[1], p[2])
     
 def p_term_tail(p):
@@ -582,6 +660,12 @@ def p_expression_binop(p):
                   | expression TIMES expression
                   | expression DIVIDE expression
                   | expression MOD expression'''
+    # Verificación de división por cero
+    if p[2] == '/' and isinstance(p[3], tuple) and p[3][0] == 'number' and p[3][1] == 0:
+        lineno = p.lineno(2)
+        print(f"Error semántico en la línea {lineno}: División por cero no permitida.")
+        global hay_error
+        hay_error = True
     p[0] = ('binop', p[2], p[1], p[3])
     
 # factor: puede ser una expresión entre paréntesis, una variable, un número o una cadena.
