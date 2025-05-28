@@ -308,6 +308,19 @@ def p_procedure_declaration(p):
                              | PROCEDURE ID LPAREN  RPAREN SEMICOLON block SEMICOLON'''
     global param_stack
     param_stack.pop()  # Pop the parameter scope when exiting the procedure
+    proc_name = p[2]
+    if proc_name in symbol_table:
+        lineno = p.lineno(1)
+        print(f"Error semántico en la línea {lineno}: El procedimiento '{proc_name}' ya fue declarado.")
+        global hay_error
+        hay_error = True
+    else:
+        symbol_table[proc_name] = ('procedure')
+    p[0] = ('procedure', proc_name, p[4], p[6])  # Guardar el nombre del procedimiento, la lista de parámetros y el bloque
+    # Agregar el procedimiento a la pila de parámetros
+    param_stack.append({})  # Crear un nuevo ámbito para los parámetros del procedimiento
+
+
 
 def p_function_declaration(p):
     '''function_declaration : FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON block SEMICOLON
@@ -462,6 +475,8 @@ def p_assignment_statement(p):
                             | ID COLON_EQUAL expression'''
     global hay_error
 
+    print(f"len(p): {len(p)}, p: {p}, p[2] = {p[2]}, p[3] = {p[3]}")
+
     # variable := expression
     if len(p) == 4 and p[2] == ':=':
         var_type = get_type(p[1])
@@ -518,6 +533,23 @@ def p_assignment_statement(p):
             hay_error = True
         p[0] = ('assign', p[1], p[3])
 
+    
+
+    elif len(p) == 4 and p[2] == ':=' and p[3] in ('+', '-', '*', '/'):
+        # ID op := expression
+        var_type = get_type(p[1])
+        expr1_type = get_type(p[4])
+        expr2_type = get_type(p[3])
+        print(f"Variable: {p[1]}, Tipo: {var_type}, Expresión: {p[4]}, Tipo: {expr_type}")
+        if var_type and expr_type and var_type != expr_type:
+            lineno = p.lineno(1)
+            print(f"Error de tipos en la línea {lineno}: No se puede operar '{var_type}' con '{expr_type}' en asignación compuesta.")
+            hay_error = True
+        op_map = {'+': 'add_assign', '-': 'sub_assign', '*': 'mul_assign', '/': 'div_assign'}
+        p[0] = (op_map[p[2]], p[1], p[4])
+
+
+
 # Una variable es un identificador, con o sin índice (para arreglos).
 def p_variable_simple(p):
     '''variable : ID
@@ -559,11 +591,21 @@ def p_while_statement(p):
 def p_procedure_call(p):
     '''procedure_call : ID LPAREN expression_list RPAREN
                       | ID'''
-    if len(p) == 2:
-        p[0] = ('procedure_call', p[1], [])
+    global hay_error
+    proc_name = p[1]
+    if proc_name not in symbol_table:
+        lineno = p.lineno(1)
+        print(f"Error semántico en la línea {lineno}: Procedimiento '{proc_name}' no declarado.")
+        hay_error = True
+    if len(p) == 4:
+        # Llamada con parámetros
+        p[0] = ('procedure_call', proc_name, p[3])
     else:
-        p[0] = ('procedure_call', p[1], p[3])
-    
+        # Llamada sin parámetros
+        p[0] = ('procedure_call', proc_name, [])
+
+
+
 # Lista de expresiones: cero o más expresiones separadas por comas.
 def p_expression_list_multi(p):
     'expression_list : expression expression_list_tail'
@@ -801,7 +843,6 @@ def p_expression_logical(p):
     else:
         # NOT
         p[0] = ('not_op', p[2])
-
 
 
 # Manejo de errores sintácticos
