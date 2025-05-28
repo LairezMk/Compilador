@@ -436,34 +436,7 @@ def p_for_statement(p):
         p[0] = ('for', p[2], p[4], p[6], p[8])
     else:
         p[0] = ('for_downto', p[2], p[4], p[6], p[8])
-# Asignación: variable, token de asignación, y expresión. EJEMPLO: x := 5 + 3.
-def get_type(node):
-    if isinstance(node, tuple):
-        if node[0] == 'var':
-            var_name = node[1]
-            t = symbol_table.get(var_name, (None, None))[1]
-            return t.upper() if t else None
-        elif node[0] == 'number':
-            return 'INTEGER'
-        elif node[0] == 'string':
-            return 'STRING'
-        elif node[0] == 'binop':
-            left = get_type(node[2])
-            right = get_type(node[3])
-            if left == right:
-                return left
-            else:
-                return None  # Tipos incompatibles
-        # Agrega más casos según tu AST
-    elif isinstance(node, str):
-        if node in symbol_table:
-            t = symbol_table[node][1]
-            return t.upper() if t else None
-        if node in ['TRUE', 'FALSE']:
-            return 'BOOLEAN'
-    elif isinstance(node, (int, float)):
-        return 'INTEGER'
-    return None
+
 
 def p_assignment_statement(p):
     '''assignment_statement : variable COLON_EQUAL expression
@@ -474,8 +447,6 @@ def p_assignment_statement(p):
                             | variable DIVIDE COLON_EQUAL expression
                             | ID COLON_EQUAL expression'''
     global hay_error
-
-    print(f"len(p): {len(p)}, p: {p}, p[2] = {p[2]}, p[3] = {p[3]}")
 
     # variable := expression
     if len(p) == 4 and p[2] == ':=':
@@ -533,20 +504,6 @@ def p_assignment_statement(p):
             hay_error = True
         p[0] = ('assign', p[1], p[3])
 
-    
-
-    elif len(p) == 4 and p[2] == ':=' and p[3] in ('+', '-', '*', '/'):
-        # ID op := expression
-        var_type = get_type(p[1])
-        expr1_type = get_type(p[4])
-        expr2_type = get_type(p[3])
-        print(f"Variable: {p[1]}, Tipo: {var_type}, Expresión: {p[4]}, Tipo: {expr_type}")
-        if var_type and expr_type and var_type != expr_type:
-            lineno = p.lineno(1)
-            print(f"Error de tipos en la línea {lineno}: No se puede operar '{var_type}' con '{expr_type}' en asignación compuesta.")
-            hay_error = True
-        op_map = {'+': 'add_assign', '-': 'sub_assign', '*': 'mul_assign', '/': 'div_assign'}
-        p[0] = (op_map[p[2]], p[1], p[4])
 
 
 
@@ -649,6 +606,16 @@ def p_simple_expression(p):
     else:
         # p[2] es una tupla (addop, term)
         p[0] = ('simple_expression', p[1], p[2])
+
+    #Verificar tipos de la expresion para evitar errores de tipo
+    global hay_error
+    left_type = get_type(p[1])
+    if p[2] is not None:
+        right_type = get_type(p[2][1])
+        if left_type and right_type and left_type != right_type:
+            lineno = p.lineno(1)
+            print(f"Error de tipos en la línea {lineno}: No se puede operar '{left_type}' con '{right_type}'.")
+            hay_error = True
     
 def p_simple_expression_tail(p):
     '''simple_expression_tail : addop term
@@ -690,6 +657,7 @@ def p_term_tail(p):
         # mulop factor
         p[0] = (p[1], p[2])
         
+
 def p_mulop(p):
     '''mulop : TIMES
              | DIVIDE
@@ -702,13 +670,28 @@ def p_expression_binop(p):
                   | expression TIMES expression
                   | expression DIVIDE expression
                   | expression MOD expression'''
+
+    global hay_error
+    print("PRUEBA")
+
     # Verificación de división por cero
     if p[2] == '/' and isinstance(p[3], tuple) and p[3][0] == 'number' and p[3][1] == 0:
         lineno = p.lineno(2)
         print(f"Error semántico en la línea {lineno}: División por cero no permitida.")
-        global hay_error
         hay_error = True
-    p[0] = ('binop', p[2], p[1], p[3])
+
+    expression_left_type = get_type(p[1])
+    expression_right_type = get_type(p[3])
+
+    print(f"Tipos de expresión: {expression_left_type} {p[2]} {expression_right_type}")
+
+    if expression_left_type not in ['INTEGER', 'REAL', 'LONGINT', 'BYTE'] or expression_right_type not in ['INTEGER', 'REAL', 'LONGINT', 'BYTE']:
+        lineno = p.lineno(2)
+        print(f"Error de tipos en la línea {lineno}: Operación no numérica con tipos: {expression_left_type} {p[2]} {expression_right_type}")
+        hay_error = True
+        p[0] = ('binop', p[2], p[1], p[3])  # Still create the node, but mark it as erroneous
+    else:
+        p[0] = ('binop', p[2], p[1], p[3])
     
 # factor: puede ser una expresión entre paréntesis, una variable, un número o una cadena.
 def p_factor_expr(p):
@@ -822,6 +805,16 @@ def p_constant(p):
     global symbol_table
     const_name = p[1]
     const_value = p[3]
+    const_type = None
+
+    if isinstance(const_value, int) or isinstance(const_value, float):
+        const_type = 'INTEGER'
+    elif isinstance(const_value, str) and (const_value.startswith("'") or const_value.startswith('"')):
+        const_type = 'STRING'
+    elif const_value in ['TRUE', 'FALSE']:
+        const_type = 'BOOLEAN'
+    else:
+        const_type = 'UNKNOWN'
 
     if const_name in symbol_table:
         lineno = p.lineno(1)
@@ -829,8 +822,8 @@ def p_constant(p):
         global hay_error
         hay_error = True
     else:
-        symbol_table[const_name] = ('const', const_value)  # Store constant in symbol table
-        p[0] = ('const', const_name, const_value)
+        symbol_table[const_name] = ('const', const_type, const_value)  # Store constant and its type
+        p[0] = ('const', const_value, const_name)
 
 # Expresión lógica
 def p_expression_logical(p):
@@ -843,6 +836,8 @@ def p_expression_logical(p):
     else:
         # NOT
         p[0] = ('not_op', p[2])
+
+
 
 
 # Manejo de errores sintácticos
@@ -861,7 +856,54 @@ def p_error(p):
             print("ERROR SINTÁCTICO AL FINAL DE LA ENTRADA: Entrada incompleta o token inesperado al final.")
     else:
         raise Exception('syntax', 'error')
+    
+def get_type(node):
+    if isinstance(node, tuple):
+        if node[0] == 'var':
+            var_name = node[1]
+            var_info = symbol_table.get(var_name)
+            if var_info and isinstance(var_info, tuple) and len(var_info) > 1:
+                t = var_info[1]
+                return t.upper() if isinstance(t, str) else str(t).upper() if isinstance(t, (int, float)) else None
+            else:
+                return None
+        elif node[0] == 'number':
+            return 'INTEGER'
+        elif node[0] == 'string':
+            return 'STRING'
+        elif node[0] == 'binop':
+            left = get_type(node[2])
+            right = get_type(node[3])
+            if left == right:
+                return left
+            else:
+                return None  # Tipos incompatibles
 
+    elif isinstance(node, str):
+        # Check if the node is a constant
+        if node in symbol_table:
+            var_info = symbol_table[node]
+            if isinstance(var_info, tuple) and len(var_info) > 1 and var_info[0] == 'const':
+                # It's a constant, return its type
+                const_value = var_info[1]
+                if isinstance(const_value, int) or isinstance(const_value, float):
+                    return 'INTEGER'
+                elif isinstance(const_value, str):
+                    return 'STRING'
+                elif const_value in ['TRUE', 'FALSE']:
+                    return 'BOOLEAN'
+                else:
+                    return None  # Unknown constant type
+            elif isinstance(var_info, tuple) and len(var_info) > 1:
+                t = var_info[1]
+                return t.upper() if isinstance(t, str) else str(t).upper() if isinstance(t, (int, float)) else None
+            else:
+                return None
+        if node in ['TRUE', 'FALSE']:
+            return 'BOOLEAN'
+    elif isinstance(node, (int, float)):
+        return 'INTEGER'
+    return None
 
 # Construcción del parser y lexer
 parser = yacc.yacc()

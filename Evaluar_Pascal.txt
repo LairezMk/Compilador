@@ -17,6 +17,7 @@ begin
 end;
 
 begin
+  sum:= i + name;
   i:= 1;
   e:= 0;
   sum:= 1;
@@ -28,7 +29,7 @@ begin
   sum +:=10;
   sum -:=10;
   sum *:=10;
-  sum:= i + name;
+  
   end;
 
 
