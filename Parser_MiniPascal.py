@@ -307,8 +307,11 @@ def p_procedure_declaration(p):
     '''procedure_declaration : PROCEDURE ID LPAREN parameter_list RPAREN SEMICOLON block SEMICOLON
                              | PROCEDURE ID LPAREN  RPAREN SEMICOLON block SEMICOLON'''
     global param_stack
-    param_stack.pop()  # Pop the parameter scope when exiting the procedure
     proc_name = p[2]
+    # Mostrar variables locales y parámetros ANTES de salir del scope
+    print(f"Ámbito local del procedimiento '{proc_name}': {param_stack[-1]}")
+    param_stack.pop()  # Salir del ámbito de parámetros del procedimiento
+
     if proc_name in symbol_table:
         lineno = p.lineno(1)
         print(f"Error semántico en la línea {lineno}: El procedimiento '{proc_name}' ya fue declarado.")
@@ -317,8 +320,10 @@ def p_procedure_declaration(p):
     else:
         symbol_table[proc_name] = ('procedure')
     p[0] = ('procedure', proc_name, p[4], p[6])  # Guardar el nombre del procedimiento, la lista de parámetros y el bloque
-    # Agregar el procedimiento a la pila de parámetros
-    param_stack.append({})  # Crear un nuevo ámbito para los parámetros del procedimiento
+    # Crear un nuevo ámbito para los parámetros del siguiente procedimiento
+    param_stack.append({})
+    print(f"Nuevo ámbito creado para el siguiente procedimiento: {param_stack[-1]}")
+
 
 
 
@@ -327,8 +332,27 @@ def p_function_declaration(p):
                             | FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON FORWARD SEMICOLON
                             | FUNCTION ID LPAREN RPAREN COLON type_specifier SEMICOLON block SEMICOLON
                             | FUNCTION ID LPAREN RPAREN COLON type_specifier SEMICOLON FORWARD SEMICOLON'''
+    global param_stack
     func_name = p[2]
-    symbol_table[func_name] = ('function')
+    # Mostrar variables locales y parámetros ANTES de salir del scope
+    print(f"Ámbito local de la función '{func_name}': {param_stack[-1]}")
+    param_stack.pop()  # Salir del ámbito de parámetros de la función
+
+    if func_name in symbol_table:
+        lineno = p.lineno(1)
+        print(f"Error semántico en la línea {lineno}: La función '{func_name}' ya fue declarada.")
+        global hay_error
+        hay_error = True
+    else:
+        symbol_table[func_name] = ('function')
+    # Guardar la función, parámetros y bloque (si aplica)
+    if len(p) in (11, 10):  # Con parámetros
+        p[0] = ('function', func_name, p[4], p[9] if p[8] != 'FORWARD' else None)
+    else:  # Sin parámetros
+        p[0] = ('function', func_name, [], p[8] if p[7] != 'FORWARD' else None)
+    # Crear nuevo ámbito para los parámetros de la función
+    param_stack.append({})
+    #print(f"Nuevo ámbito creado para la siguiente función: {param_stack[-1]}")
 
     '''# Add parameters to symbol table (if any)
     if len(p) > 4 and p[4]:
@@ -923,10 +947,11 @@ if __name__ == '__main__':
     parser.parse(data, tracking=True, lexer=lexer)
 
     if not hay_error:
-        print("Amiguito, tengo el placer de informar que tu parser reconoció correctamente todo.")
+        #print("Amiguito, tengo el placer de informar que tu parser reconoció correctamente todo.")
         print("\nTabla de símbolos:")
         for name, t in symbol_table.items():
             print(f"  {name} : {t}")
+        print("\n🤑")
     else:
         print("Lo siento, tu parser detectó errores en la entrada.")
         print("\nTabla de símbolos:")

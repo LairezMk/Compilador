@@ -1,47 +1,12 @@
-program TestPascal;
-
-const
-  PI = 3.14;
-  MAX = 100;
-
-var
-  i, e, sum: integer;
-  radius: real;
-  name: STRING;
-
-
-
-procedure PrintResult(value: integer);
+program FactorialRecursivo;
+function Factorial(n: integer): integer;
 begin
-  writeln('Resultado: ', value);
+  if n = 0 then
+    Factorial := 1
+  else
+    Factorial := n * Factorial(n - 1);
 end;
 
 begin
-  sum:= i + name;
-  i:= 1;
-  e:= 0;
-  sum:= 1;
-  name:= "hola";
-  sum := 0;
-  for i := 1 to MAX do
-  begin
-    sum := sum + i;
-  sum +:=10;
-  sum -:=10;
-  sum *:=10;
-  
-  end;
-
-
-  writeln('Suma de 1 a ', MAX, ' es: ', sum);
-
-  write('Ingresa el radio del círculo: ');
-  readln(radius);
-  writeln('Área del círculo: ', PI * radius);
-
-  write('Ingresa tu nombre: ');
-  readln(name);
-  writeln('Hola, ', name);
-
-  PrintResult(sum);
+  writeln('Factorial de 5 es: ', Factorial(5));
 end.
