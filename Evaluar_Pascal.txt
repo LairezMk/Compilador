@@ -1,12 +1,22 @@
-program FactorialRecursivo;
-function Factorial(n: integer): integer;
+program FactorialProgram;
+
+function Factorial(n: Integer): LongInt;
 begin
   if n = 0 then
-    Factorial := 1
+    Factorial := 'name'
   else
     Factorial := n * Factorial(n - 1);
 end;
 
+var
+  num: Integer;
 begin
-  writeln('Factorial de 5 es: ', Factorial(5));
+  num := n;
+  Write('Ingrese un número entero: ');
+  ReadLn(num);
+
+  if num < 0 then
+    WriteLn('El factorial no está definido para números negativos.')
+  else
+    WriteLn('El factorial de ', num, ' es: ', Factorial(num));
 end.

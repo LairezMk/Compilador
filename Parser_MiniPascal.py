@@ -322,10 +322,6 @@ def p_procedure_declaration(p):
     p[0] = ('procedure', proc_name, p[4], p[6])  # Guardar el nombre del procedimiento, la lista de parámetros y el bloque
     # Crear un nuevo ámbito para los parámetros del siguiente procedimiento
     param_stack.append({})
-    print(f"Nuevo ámbito creado para el siguiente procedimiento: {param_stack[-1]}")
-
-
-
 
 def p_function_declaration(p):
     '''function_declaration : FUNCTION ID LPAREN parameter_list RPAREN COLON type_specifier SEMICOLON block SEMICOLON
@@ -334,6 +330,9 @@ def p_function_declaration(p):
                             | FUNCTION ID LPAREN RPAREN COLON type_specifier SEMICOLON FORWARD SEMICOLON'''
     global param_stack
     func_name = p[2]
+    length = len(p)
+    return_type = p[length - 4] # Guardar el tipo de retorno de la función
+
     # Mostrar variables locales y parámetros ANTES de salir del scope
     print(f"Ámbito local de la función '{func_name}': {param_stack[-1]}")
     param_stack.pop()  # Salir del ámbito de parámetros de la función
@@ -344,7 +343,7 @@ def p_function_declaration(p):
         global hay_error
         hay_error = True
     else:
-        symbol_table[func_name] = ('function')
+        symbol_table[func_name] = ('function', return_type)  # Guardar el nombre de la función y su tipo de retorno en la tabla de símbolos
     # Guardar la función, parámetros y bloque (si aplica)
     if len(p) in (11, 10):  # Con parámetros
         p[0] = ('function', func_name, p[4], p[9] if p[8] != 'FORWARD' else None)
@@ -352,14 +351,7 @@ def p_function_declaration(p):
         p[0] = ('function', func_name, [], p[8] if p[7] != 'FORWARD' else None)
     # Crear nuevo ámbito para los parámetros de la función
     param_stack.append({})
-    #print(f"Nuevo ámbito creado para la siguiente función: {param_stack[-1]}")
-
-    '''# Add parameters to symbol table (if any)
-    if len(p) > 4 and p[4]:
-        for param in p[4]:
-            param_name = param[1]
-            param_type = param[2]
-            symbol_table[param_name] = ('parameter', param_type)'''
+    
 
 def p_function_call(p):
     'function_call : ID LPAREN expression_list RPAREN'
@@ -471,7 +463,7 @@ def p_assignment_statement(p):
                             | variable DIVIDE COLON_EQUAL expression
                             | ID COLON_EQUAL expression'''
     global hay_error
-
+    global symbol_table
     # variable := expression
     if len(p) == 4 and p[2] == ':=':
         var_type = get_type(p[1])
@@ -696,7 +688,6 @@ def p_expression_binop(p):
                   | expression MOD expression'''
 
     global hay_error
-    print("PRUEBA")
 
     # Verificación de división por cero
     if p[2] == '/' and isinstance(p[3], tuple) and p[3][0] == 'number' and p[3][1] == 0:
@@ -706,8 +697,6 @@ def p_expression_binop(p):
 
     expression_left_type = get_type(p[1])
     expression_right_type = get_type(p[3])
-
-    print(f"Tipos de expresión: {expression_left_type} {p[2]} {expression_right_type}")
 
     if expression_left_type not in ['INTEGER', 'REAL', 'LONGINT', 'BYTE'] or expression_right_type not in ['INTEGER', 'REAL', 'LONGINT', 'BYTE']:
         lineno = p.lineno(2)
@@ -861,9 +850,6 @@ def p_expression_logical(p):
         # NOT
         p[0] = ('not_op', p[2])
 
-
-
-
 # Manejo de errores sintácticos
 def p_error(p):
     global hay_error
@@ -882,6 +868,7 @@ def p_error(p):
         raise Exception('syntax', 'error')
     
 def get_type(node):
+    global symbol_table
     if isinstance(node, tuple):
         if node[0] == 'var':
             var_name = node[1]
@@ -902,14 +889,22 @@ def get_type(node):
                 return left
             else:
                 return None  # Tipos incompatibles
-
+        elif node[0] == 'function_call':
+            func_name = node[1]
+            if func_name in symbol_table:
+                func_info = symbol_table[func_name]
+                # Check if the symbol table entry is for a function and has a return type
+                if isinstance(func_info, tuple) and func_info[0] == 'function' and len(func_info) > 1:
+                    return func_info[1].upper()  # Return the function's return type in uppercase  
+            return None  # If function not found or doesn't have a return type
+            
     elif isinstance(node, str):
         # Check if the node is a constant
         if node in symbol_table:
             var_info = symbol_table[node]
             if isinstance(var_info, tuple) and len(var_info) > 1 and var_info[0] == 'const':
                 # It's a constant, return its type
-                const_value = var_info[1]
+                const_value = var_info[2]
                 if isinstance(const_value, int) or isinstance(const_value, float):
                     return 'INTEGER'
                 elif isinstance(const_value, str):
@@ -917,6 +912,7 @@ def get_type(node):
                 elif const_value in ['TRUE', 'FALSE']:
                     return 'BOOLEAN'
                 else:
+                    
                     return None  # Unknown constant type
             elif isinstance(var_info, tuple) and len(var_info) > 1:
                 t = var_info[1]
@@ -947,14 +943,14 @@ if __name__ == '__main__':
     parser.parse(data, tracking=True, lexer=lexer)
 
     if not hay_error:
-        #print("Amiguito, tengo el placer de informar que tu parser reconoció correctamente todo.")
         print("\nTabla de símbolos:")
         for name, t in symbol_table.items():
             print(f"  {name} : {t}")
-        print("\n🤑")
+        print("\nEl COMPILADOR no detectó errores en la entrada.")
     else:
-        print("Lo siento, tu parser detectó errores en la entrada.")
+        
         print("\nTabla de símbolos:")
         for name, t in symbol_table.items():
             print(f"  {name} : {t}")
+        print("\nLo siento, tu COMPILADOR detectó errores en la entrada.")
 
